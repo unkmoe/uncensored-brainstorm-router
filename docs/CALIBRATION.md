@@ -42,9 +42,9 @@ prompt while present in the logprob fallback). Raw results:
 
 | Judge | friction | AUP | latency | cost | egress |
 | --- | --- | --- | --- | --- | --- |
-| Jev `jev-1.13` | 13/15 @ 0.2, FP 0 | 25/25 @ 0.6 | p50 253 ms | ~$0.00002 | to judge provider |
+| Jev `jev-1.13` | 13/15 @ 0.2, FP 0 | 50/50 @ 0.7 | p50 253 ms | ~$0.00002 | to judge provider |
 | 7B vLLM logprob | **0/15 (non-functional)** | 9/10, FP 3 | 750-900 ms | GPU seconds | none (your endpoint) |
-| Kev-4B local CPU | 15/15 @ 0.336 (margin 0.042 — fragile) | 25/25 @ 0.648 | p50 2.3 s | $0 | none |
+| Kev-4B local CPU | 15/15 @ 0.336 (margin 0.042 — fragile) | 50/50 @ 0.748 | p50 2.3 s | $0 | none |
 
 ## How to re-run
 
