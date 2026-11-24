@@ -57,7 +57,7 @@ Deploy the backend first: follow a recipe in
 endpoint ID it returns. Then:
 
 ```bash
-git clone <repo-url> && cd uncensored-brainstorm-router && npm install
+git clone https://github.com/unkmoe/uncensored-brainstorm-router.git && cd uncensored-brainstorm-router && npm install
 
 export RUNPOD_API_KEY=rpa_…        # Prerequisites: RunPod
 export OPENCODE_API_KEY=…          # Prerequisites: judge (Jev)
@@ -125,4 +125,5 @@ available — [docs/JUDGE.md](docs/JUDGE.md).
 ## License
 
 [Apache-2.0](LICENSE) · **lawful use only** per [AUP.md](AUP.md). Backend recipes
-and feedback welcome via issues.
+and feedback welcome via
+[issues](https://github.com/unkmoe/uncensored-brainstorm-router/issues).
