@@ -7,7 +7,7 @@
  */
 
 /** doc/09 §4: refuse at >= 0.5 (Jev calibration: 25/25 correct at 0.5). */
-export const AUP_THRESHOLD = 0.5;
+export const AUP_THRESHOLD = 0.6; // 80-item calibration 2026-11-24: FN 0/50, one FP at exactly 0.50; full separation 0.55-0.8 (worker-reports/r-aup.md)
 /** Jev calibration 2026-11-24: 13/15 detected, FPR 0/15 at 0.2. */
 export const FRICTION_THRESHOLD = 0.2;
 
