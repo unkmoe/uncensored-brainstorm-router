@@ -17,10 +17,6 @@ Measured, not claimed: friction **13/15 detected, 0 false positives** · illegal
 categories **50/50 caught** (80-item battery) · judge **~$0.00002/turn** · warm
 session **~$0.6 / 30 min** · raw results in [docs/CALIBRATION.md](docs/CALIBRATION.md).
 
-> Not a jailbreak project. The same judge that escalates lawful friction also refuses
-> illegal categories; the AUP threshold is fixed by spec, not configurable
-> ([AUP.md](AUP.md)).
-
 ## Quick start
 
 ```bash
@@ -94,8 +90,6 @@ An MCP adapter is deliberately deferred (measured reasons in
 - **AUP threshold (0.6) is fixed by spec** ([AUP.md](AUP.md)).
 
 ## FAQ
-
-**Is this a jailbreak?** No — see the note above.
 
 **Cost per session?** ~$0.6 / 30 min warm ($1.22/hr, scale-to-zero, $0 idle) plus
 ~$0.00002/turn for the judge (or $0 with the local judge).
