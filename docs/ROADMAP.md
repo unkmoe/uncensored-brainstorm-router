@@ -63,3 +63,56 @@ Calibration harnesses run as pi extensions and are resume-aware — see
   "jailbreak mode". This is a spec decision; see [AUP.md](../AUP.md).
 - Hosting anyone's prompts. BYO keys; the only optional external call is the judge,
   and there is a fully local option ([docs/JUDGE.md](JUDGE.md)).
+
+---
+
+## The problem this solves (full narrative)
+
+Mainstream assistants refuse, hedge, or quietly narrow lawful-but-controversial
+brainstorming: sharp institutional critique, taboo thought experiments, adversarial
+perspectives, adult fiction. Self-hosting an uncensored model fixes the friction but
+creates two new problems: **cost-control accidents** (idle GPU burn, runaway spend)
+and **no illegal-content gate** — the exact content that gets GPU accounts frozen.
+This package puts a dual-use judge in front of uncensored RunPod backends so that
+lawful friction is routed around, illegal categories are refused before any GPU second
+is billed, and a budget governor watches spend in real time. You bring your own keys;
+nothing leaves your account except (optionally zero — see docs/JUDGE.md) judge tokens.
+
+## Why this vs alternatives
+
+| Feature | OpenRouter-hosted uncensored models | raw RunPod DIY | Venice.ai | **this package** |
+| --- | --- | --- | --- | --- |
+| Uncensored backends | ○ (theirs) | ○ (yours) | ○ (theirs) | ○ (yours) |
+| Illegal-category gate in the box | ✗ | ✗ | ✗ (opaque) | **✓ measured** |
+| Friction auto-escalation per turn | ✗ | ✗ | ✗ | **✓ (pi extension)** |
+| Budget cap + auto-throttle | ✗ | ✗ | ✗ | **✓ (governor)** |
+| Prompts stay on your account | ✗ | ○ | ✗ | **✓ / judge optional local** |
+| Measured judge accuracy published | ✗ | n/a | ✗ | **✓ (calibration in repo)** |
+
+## Design philosophy
+
+1. **Friction removal and illegal-category blocking are different jobs** — the first
+   is UX, the second is survival. One judge does both in a single classify call.
+2. **The gate lives outside the model.** Uncensored fine-tunes can't be asked to
+   police themselves; a classifier in front of them can, and its verdict is auditable.
+3. **Measured numbers only.** Every threshold comes from a battery whose raw JSONL
+   is checked in.
+4. **BYO everything.** Your RunPod account, your judge provider (or your own CPU).
+5. **Honest limitations.** Including the ones that cost us debugging rounds.
+
+## Architecture (full picture)
+
+```
+pi extension (verified end to end)
+  Judge (Jev, 1 call/turn) ─┬─ AUP ≥ 0.6       → REFUSE (no model billed)
+                             ├─ friction ≥ 0.2  → uncensored backend (RunPod serverless vLLM)
+                             └─ otherwise       → mainstream session model
+                             + session-state caching, sticky routing (prompt-cache friendly)
+
+HTTP core (src/core, verified via direct requests)
+  POST /v1/chat/completions ── AUP ≥ 0.6 → REFUSE (HTTP 400, no backend call)
+                              else → uncensored backend
+                              (route label "uncensored"/"default" is telemetry; X-Judge-* headers)
+
+RunPod REST v2 (src/client.ts, typed) ── budget governor (src/governor)
+```

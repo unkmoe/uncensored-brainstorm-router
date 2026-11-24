@@ -172,6 +172,10 @@ With the core running on `localhost:8787`:
 }
 ```
 
+Core response headers (judge telemetry): `X-Judge-Route` (`refuse`/`uncensored`/`default`),
+`X-Judge-Friction`, `X-Judge-Aup`, `X-Judge-Backend`, `X-Judge-Latency-Ms`. `uncensored`
+vs `default` both point at the same backend — the label records *why* the turn was served.
+
 Then `pi --model brainstorm-core/brainstorm …` — no extension needed; the judge and
 AUP gate run inside the core. Other OpenAI-compatible clients point at the same URL,
 but are not yet verified (see README Limitations).
