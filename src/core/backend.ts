@@ -1,5 +1,5 @@
 /**
- * RunPod OpenAI-compatible backend (24B uncensored main axis, p2-24b.md).
+ * RunPod OpenAI-compatible backend (uncensored main axis).
  *
  * The core forwards accepted requests here after the judge decision. Any model
  * id the client sends is overridden with the configured backend model.
@@ -20,7 +20,7 @@ export interface BackendCall {
 
 /**
  * Calls the RunPod backend. `body` must already carry the resolved model id.
- * No timeout: a cold vLLM worker can take minutes to boot (p2-coldstart.md);
+ * No timeout: a cold vLLM worker can take minutes to boot (see docs/DEPLOYMENT.md);
  * FlashBoot warm starts answer in seconds.
  */
 export async function callBackend(body: Record<string, unknown>): Promise<BackendCall> {

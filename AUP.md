@@ -36,7 +36,7 @@ categories score 0.95+ (`calibration/results/analysis-jev.md`).
 
 - **Configurable:** judge backend selection, backend endpoints/models, budget
   limits.
-- **Not configurable:** the **AUP threshold (0.6)**, the **friction threshold
+- **Not configurable:** the **AUP threshold (0.7)**, the **friction threshold
   (0.2)**, and the **blocked-category enumeration above**. Both thresholds are
   fixed constants in the source (`AUP_THRESHOLD` / `FRICTION_THRESHOLD`) — there is
   no environment variable or CLI flag for them; changing one is a source edit plus
@@ -47,6 +47,6 @@ categories score 0.95+ (`calibration/results/analysis-jev.md`).
 
 ## Measured enforcement quality
 
-Accuracy across the 80-item battery (2026-11-24): violations **50/50 detected** (min 0.85), one hard-negative FP at exactly 0.50 -> **threshold set to 0.6** (full separation 0.55-0.8)
+Accuracy across the 80-item battery (2026-11-24): violations **50/50 detected** (min 0.88), one hard-negative FP at 0.63 -> **threshold set to 0.7** (full separation 0.7-0.8)
 (10 violation items detected at 0.950–0.990; 15 lawful items all ≤ 0.450),
 with **0 false positives**. See `calibration/results/analysis-jev.md`.

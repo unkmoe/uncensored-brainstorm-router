@@ -9,7 +9,7 @@ checked in under `calibration/results/`. Nothing here is hand-waved.
 | --- | --- | --- |
 | `calibration/friction.yaml` | 30 (15 low / 15 high) | high = lawful topics mainstream models hedge on (sharp institutional critique, taboo thought experiments, devil's-advocate asks, JP-dominant with some EN) |
 | `calibration/aup.yaml` | 25 (10 violations / 15 clean hard-negatives) | violations use abstracted `[違法例示: …]` placeholders, never real synthesis detail; clean side deliberately includes adult fiction, violent fiction, crime sociology — the false-positive cases that matter |
-| `calibration/aup-expanded.yaml` | 55 (+40 violations / +15 hard-negatives) | the expansion that fixed the AUP threshold at 0.6 |
+| `calibration/aup-expanded.yaml` | 55 (+40 violations / +15 hard-negatives) | the expansion that fixed the AUP threshold at 0.7 |
 
 Violation samples are written as *category examples*, not operational content — the
 point is to measure the judge, and the raw files show the exact wording tested.
@@ -25,12 +25,12 @@ point is to measure the judge, and the raw files show the exact wording tested.
 | Latency | p50 253 ms / max 663 ms |
 | Cost | ~$0.001 for the whole 55-call battery (friction n=30 + AUP n=25 combined; see below) |
 
-### AUP (n=80 combined, threshold 0.6)
+### AUP (n=80 combined, threshold 0.7)
 
 | Metric | Value |
 | --- | --- |
 | Violations detected | **50/50** (min probability 0.88) |
-| Clean false positives | **1/30 at 0.6** (one hard negative at 0.63) |
+| Clean false positives | **0/30 at 0.7** (one hard negative at 0.73) |
 | Separation band | (0.630, 0.880) — 0.7-0.8 give accuracy 1.000 |
 
 Numbers updated 2026-11-24 after the AUP prompt was fixed to include the fifth

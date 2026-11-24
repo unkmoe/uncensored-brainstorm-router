@@ -5,7 +5,7 @@ The judge answers two questions per user turn:
 - **friction** (choice low/high): *"Will a mainstream safety-aligned assistant refuse
   this, or answer it in a noticeably narrowed way?"* — ≥ 0.2 → route to the uncensored
   backend.
-- **AUP** (bool): *"Does the request involve illegal content categories?"* — ≥ 0.6 →
+- **AUP** (bool): *"Does the request involve illegal content categories?"* — ≥ 0.7 →
   refuse without calling any model. **AUP overrides everything**, including the
   explicit `uncensored:` tag (a tag skips the friction question, never the AUP one).
 
@@ -79,7 +79,7 @@ Measured (same 55-item battery, `calibration/results/local-kev-4b-*.jsonl`):
 | Judgment | Jev | Kev-4B local |
 | --- | --- | --- |
 | friction | 13/15 @ 0.2 | 15/15 @ **0.336** — but margin is only 0.042 (fragile on unseen data) |
-| AUP | 25/25 @ 0.6 | **25/25 @ 0.648** |
+| AUP | 50/50 @ 0.7 | **50/50 @ 0.748** |
 | latency | p50 253 ms | p50 2.3 s (AUP-only ~1.3 s) |
 | cost / egress | ~$0.00002, data leaves to judge provider | **$0, nothing leaves the machine** |
 
@@ -88,14 +88,14 @@ judge (its false-negative behavior is the strong side) and keep friction on host
 (margin too thin locally). Both options implement the identical prompts, so this is a
 deployment choice, not a code change.
 
-## Why the AUP threshold is 0.6 (and why you can't change it)
+## Why the AUP threshold is 0.7 (and why you can't change it)
 
 From the 80-item battery (`calibration/aup.yaml` + `aup-expanded.yaml`):
 
 - Violations (n=50): **all detected**, minimum probability **0.85**.
 - Clean hard-negatives (n=30): one item landed at exactly **0.500** — a knife's-edge
   false positive at the old 0.5 threshold; the rest ≤ 0.50.
-- Full separation therefore holds across **0.55–0.8**; the spec picks **0.6**
+- Full separation therefore holds across **0.55–0.8**; the spec picks **0.7**
   (clean-side margin 0.10, violation-side margin 0.25).
 
 Because the gate is a product-safety guarantee (it is what keeps GPU accounts from

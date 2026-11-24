@@ -13,12 +13,12 @@ your message
     ▼
 judge — one classify call per turn
     │
-    ├─ AUP ≥ 0.6       ──►  refused — no response model is called
+    ├─ AUP ≥ 0.7       ──►  refused — no response model is called
     ├─ friction ≥ 0.2  ──►  uncensored backend
     └─ otherwise       ──►  your normal session model
 ```
 
-- **AUP (Acceptable Use Policy) ≥ 0.6** — the judge's probability that the request
+- **AUP (Acceptable Use Policy) ≥ 0.7** — the judge's probability that the request
   belongs to an illegal content category. Fixed by spec ([AUP.md](AUP.md)); at or
   above it, the turn is refused — no response model is called.
 - **friction ≥ 0.2** — the judge's probability that a mainstream assistant would

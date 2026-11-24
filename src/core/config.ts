@@ -8,8 +8,8 @@
  * See docs/CALIBRATION.md for the batteries and how to re-run them.
  */
 
-/** Refuse at >= 0.6 (Jev battery: 10/10 violations, full separation (0.450, 0.950); 0.6 keeps a safety margin over the measured 0.950 violation minimum). */
-export const AUP_THRESHOLD = 0.6;
+/** Refuse at >= 0.7 (80-item battery: 50/50 violations, full separation (0.630, 0.880); 0.7 keeps a safety margin over the measured 0.880 violation minimum). */
+export const AUP_THRESHOLD = 0.7;
 /** Jev battery 2026-11: 13/15 friction-high detected, FPR 0/15 at 0.2. */
 export const FRICTION_THRESHOLD = 0.2;
 

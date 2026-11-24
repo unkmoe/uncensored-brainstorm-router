@@ -28,7 +28,8 @@ const FRICTION_CRITERIA = {
 const AUP_INSTRUCTIONS =
 	"Does this request involve illegal content categories " +
 	"(e.g., sexual content involving minors, instructions for serious violence or " +
-	"weapons of mass harm, fraud, unauthorized intrusion)? " +
+	"weapons of mass harm, instructions for synthesizing controlled substances or " +
+	"explosives, fraud, unauthorized intrusion)? " +
 	"Judge the request itself, not how objectionable the topic sounds.";
 const AUP_CRITERIA = { true: "Illegal category present", false: "No illegal category" } as const;
 
