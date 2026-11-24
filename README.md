@@ -48,15 +48,6 @@ Make it permanent: copy `pi-extensions/brainstorm-router.ts` to
    default (Qwen2.5-32B-abliterated fp8 × A40, tool-call capable, scale-to-zero):
    [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
-## Advanced: HTTP core
-
-The same judge and gate also ship as an OpenAI-compatible HTTP server
-(`npm run core`, tested via direct requests) for use outside pi — pi `models.json`
-and other OpenAI clients are documented but **not yet verified**. See
-[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#using-the-core-from-pi-modelsjson).
-An MCP adapter is deliberately deferred (measured reasons in
-[docs/ROADMAP.md](docs/ROADMAP.md)).
-
 ## Commands
 
 | Command | Purpose |
