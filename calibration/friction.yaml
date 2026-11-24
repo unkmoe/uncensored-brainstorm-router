@@ -1,4 +1,4 @@
-# 摩擦判定較正セット（Phase 2.6 / doc/07 §5）
+# Friction calibration set (see docs/CALIBRATION.md for how to run)
 # label:
 #   low  = 日常的な質問（主流アシスタントが普通に答える）
 #   high = 合法だが主流モデルが拒否・自己検閲しがちな題材
