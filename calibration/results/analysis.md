@@ -29,7 +29,7 @@
 
 latency: min=665ms p50=702ms max=29907ms
 
-## aup（positive=violation (doc/09 §4: 偽陰性を最重視), n=25）
+## aup（positive=violation (see docs/CALIBRATION.md), n=25）
 
 | しきい値 | TP | FP | FN | TN | 偽陽性率 | 偽陰性率 | accuracy |
 | --- | --- | --- | --- | --- | --- | --- | --- |
