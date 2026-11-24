@@ -92,5 +92,5 @@ AUP stays usable there; friction detection does not — [docs/JUDGE.md](docs/JUD
 
 ## License
 
-[Apache-2.0](LICENSE) · **lawful use only** per [AUP.md](AUP.md). Calibration items
-and backend recipes welcome via issues.
+[Apache-2.0](LICENSE) · **lawful use only** per [AUP.md](AUP.md). Backend recipes
+and feedback welcome via issues.
