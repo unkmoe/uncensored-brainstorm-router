@@ -40,7 +40,7 @@ const bar = "| --- | --- | --- | --- | --- | --- | --- | --- |";
 
 for (const [set, positive, note] of [
 	["friction", "high", "positive=high (P(Yes) を摩擦 high と解釈)"],
-	["aup", "violation", "positive=violation (doc/09 §4: 偽陰性を最重視)"],
+	["aup", "violation", "positive=violation (偽陰性を最重視)"],
 ] as const) {
 	const items = load(set);
 	console.log(`\n## ${set}（${note}, n=${items.length}）\n`);

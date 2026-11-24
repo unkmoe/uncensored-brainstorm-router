@@ -11,8 +11,8 @@
  *     warn at warnRatio × limit; breach at limit. Breach throttles
  *     (PATCH workers.max=0) only when running with --apply.
  *  5. GET /v2/billing/balance → warn when below balanceFloorUsd
- *     (balance reflects spend only after scale-down, doc/04 §7 — used as a
- *     floor guarantee, never as the real-time signal).
+ *     (balance reflects spend only after scale-down, so it is used as a
+ *     floor guarantee, never as the real-time signal — see docs/GOVERNOR.md).
  *
  * Read-only by default. PATCH is sent only with --apply. GET only otherwise.
  */
@@ -208,7 +208,7 @@ export class BudgetGovernor {
     // Session bookkeeping: session = continuous span with ≥1 billable worker.
     // Backfill trusts only workers with live uptime evidence (uptimeSeconds
     // present and self-consistent). An INITIALIZING record's startedAt can
-    // belong to a stale placeholder (doc/04 §7), so it never seeds backfill.
+    // belong to a stale placeholder, so it never seeds backfill.
     if (billable.length > 0 && !st.session.active) {
       st.session.active = true;
       const confirmed = billable.filter((w) => w.uptimeSeconds !== null);
@@ -353,7 +353,7 @@ export class BudgetGovernor {
     this.logger.warn('balance_floor_low', {
       balanceUsd,
       floorUsd: floor,
-      note: 'balance reflects only after scale-down (doc/04 §7); floor guarantee is conservative',
+      note: 'balance reflects only after scale-down; floor guarantee is conservative',
       apply: this.opts.apply,
     });
     if (this.cfg.balanceFloorAction === 'throttle' && this.opts.apply) {

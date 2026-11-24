@@ -2,8 +2,9 @@
  * Serverless GPU price catalog (read-only wrapper around GET /v2/catalog/gpus).
  *
  * `price.serverless` is the list price per GPU per hour from the pool the GPU
- * belongs to (doc/03, GpuType schema). Negotiated discounts are not reflected,
- * which makes this estimate an upper bound for discounted accounts.
+ * belongs to (GpuType schema in the RunPod REST API v2). Negotiated discounts
+ * are not reflected, which makes this estimate an upper bound for
+ * discounted accounts (see docs/GOVERNOR.md).
  */
 
 import type { RunPodClient } from '../client.js';

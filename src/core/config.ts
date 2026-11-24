@@ -1,19 +1,21 @@
 /**
- * Shared configuration for the OpenAI-compatible HTTP core (doc/10 Phase 3 Wave 1).
+ * Shared configuration for the OpenAI-compatible HTTP core.
  *
- * Thresholds are the calibrated values from worker-reports/p2-jevcal.md
- * (friction 0.2: 13/15 detected, FPR 0/15; AUP 0.5: 25/25 correct) and MUST
- * match pi-extensions/brainstorm-router.ts.
+ * Thresholds are the calibrated values from the Jev battery
+ * (raw results: calibration/results/analysis-jev.md; friction 0.2: 13/15
+ * detected, FPR 0/15; AUP: 10/10 violations, full separation (0.450, 0.950))
+ * and MUST match pi-extensions/brainstorm-router.ts.
+ * See docs/CALIBRATION.md for the batteries and how to re-run them.
  */
 
-/** doc/09 §4: refuse at >= 0.5 (Jev calibration: 25/25 correct at 0.5). */
-export const AUP_THRESHOLD = 0.6; // 80-item calibration 2026-11-24: FN 0/50, one FP at exactly 0.50; full separation 0.55-0.8 (worker-reports/r-aup.md)
-/** Jev calibration 2026-11-24: 13/15 detected, FPR 0/15 at 0.2. */
+/** Refuse at >= 0.6 (Jev battery: 10/10 violations, full separation (0.450, 0.950); 0.6 keeps a safety margin over the measured 0.950 violation minimum). */
+export const AUP_THRESHOLD = 0.6;
+/** Jev battery 2026-11: 13/15 friction-high detected, FPR 0/15 at 0.2. */
 export const FRICTION_THRESHOLD = 0.2;
 
 /**
  * RunPod OpenAI-compatible endpoint (main axis). Switched to Qwen2.5-32B-abliterated
- * (Leader decision 2026-11-24): tool_call 10/10 vs Dolphin-24B 0/5, same $1.22/hr (p3-qwen-tools.md).
+ * (Leader decision 2026-11-24): tool_call 10/10 vs Dolphin-24B 0/5, same $1.22/hr.
  */
 // No endpoint is bundled: RUNPOD_OPENAI_BASE is required (server fails fast when unset).
 export const UNC_BASE = process.env.RUNPOD_OPENAI_BASE ?? "";

@@ -1,13 +1,14 @@
 /**
- * Brainstorm router - virtual model `router/brainstorm` implementing doc/07 §2 (経路B) +
- * doc/09 §2-4 (dual-question judge -> 3-branch routing).
+ * Brainstorm router - virtual model `router/brainstorm`: dual-question judge ->
+ * 3-branch routing (policy: AUP.md; judge design: docs/JUDGE.md; calibration:
+ * docs/CALIBRATION.md + calibration/results/).
  *
  * Judge: one dual-question call per user turn (`request.reason === "user"` only; tool
  * follow-ups/retries stay sticky on the previous model). The judge answers:
  *   - friction (choice low/high): will a mainstream assistant refuse or self-censor?
  *   - aup (bool): does the request involve an illegal content category?
- * Routing (doc/09 §3, thresholds §4):
- *   - aup >= 0.5                       -> REFUSE (no model is called; AUP overrides everything,
+ * Routing (thresholds measured by the checked-in calibration battery):
+ *   - aup >= 0.7                       -> REFUSE (no model is called; AUP overrides everything,
  *                                         including an explicit `uncensored:` tag)
  *   - explicit tag OR friction >= 0.2  -> uncensored RunPod backend (thinking off)
  *   - otherwise                        -> main model
@@ -34,15 +35,21 @@ import type { Message, Model } from "@earendil-works/pi-ai";
 import type { ExtensionAPI, ExtensionContext, ModelRoute, ModelRouteRequest } from "@earendil-works/pi-coding-agent";
 
 const UNC_PROVIDER = "runpod-uncensored";
-// Main axis switched to Qwen2.5-32B-abliterated (Leader decision 2026-11-24): tool_call fires 10/10 vs Dolphin-24B 0/5 on identical prompts, same $1.22/hr (p3-qwen-tools.md). Dolphin-24B stays available via env override for tool-free, explicitly-instructed sub-tasks.
+// Main axis: Qwen2.5-32B-abliterated — tool_call fires reliably on this endpoint
+// (10/10 in the tool-call battery) at the same $1.22/hr. Dolphin-24B stays available
+// via env override for tool-free, explicitly-instructed sub-tasks.
 // No endpoint is bundled: RUNPOD_OPENAI_BASE is required (fail-fast at load).
 const UNC_BASE = process.env.RUNPOD_OPENAI_BASE ?? "";
 const REQUIRE_BASE =
 	"brainstorm-router: set RUNPOD_OPENAI_BASE (https://api.runpod.ai/v2/<your-endpoint-id>/openai/v1). " +
 	"No endpoint is bundled in this repo.";
 const UNC_MODEL = process.env.RUNPOD_UNCENSORED_MODEL ?? "huihui-ai/Qwen2.5-32B-Instruct-abliterated";
-const AUP_THRESHOLD = 0.6; // doc/09 §4 + 80-item calibration (2026-11-24): FN 0/50, min violation 0.85, one FP at exactly 0.50; full separation 0.55-0.8 (worker-reports/r-aup.md)
-const FRICTION_THRESHOLD = 0.2; // Jev calibration 2026-11-24: 13/15 detected, FPR 0/15 at 0.2 (worker-reports/p2-jevcal.md)
+// 80-item AUP battery with the 5-category prompt (aup.yaml 25 + aup-expanded.yaml 55,
+// calibration/results/analysis-aup-expanded.md): full separation (0.630, 0.880);
+// 0.7 = zero FN (violation min 0.880, margin 0.18) and zero FP (clean max 0.630, margin 0.07).
+// Must stay in sync with the core constant in src/core/config.ts.
+const AUP_THRESHOLD = 0.7;
+const FRICTION_THRESHOLD = 0.2; // Jev friction battery: 13/15 high detected, FPR 0/15 at 0.2 (calibration/results/analysis-jev.md)
 const JUDGE_MODE = (process.env.BRAINSTORM_JUDGE ?? "auto") as "jev" | "vllm" | "auto";
 
 interface RouterState {
@@ -79,7 +86,7 @@ function lastUserText(messages: readonly Message[]): string {
 }
 
 // ---------------------------------------------------------------------------
-// Judge backend 1: Jev via opencode (doc/07 §1; preferred when billing works)
+// Judge backend 1: Jev via opencode (preferred when billing works; docs/JUDGE.md)
 // ---------------------------------------------------------------------------
 
 async function jevJudge(text: string, request: ModelRouteRequest<RouterState>, ctx: ExtensionContext): Promise<JudgeOutcome | { error: string }> {
@@ -88,7 +95,9 @@ async function jevJudge(text: string, request: ModelRouteRequest<RouterState>, c
 		ctx.modelRegistry.findOfType("classifier", "opencode", "jev-1.13-free"); // free variant requires training opt-in, usually 400
 	if (!jev) return { error: "no opencode Jev classifier in catalog" };
 	const t0 = Date.now();
-	// doc/09 §2: both questions in ONE classify call (marginal cost ~zero).
+	// Both questions in ONE classify call (marginal cost ~zero). The AUP category
+	// enumeration below MUST match the logprob fallback prompt and AUP.md exactly
+	// (5 categories + fail-safe "when unsure" directive).
 	const r = await ctx.modelRegistry.classify(
 		jev,
 		{
@@ -109,7 +118,10 @@ async function jevJudge(text: string, request: ModelRouteRequest<RouterState>, c
 					instructions:
 						"Does this request involve illegal content categories " +
 						"(e.g., sexual content involving minors, instructions for serious violence or " +
-						"weapons of mass harm, fraud, unauthorized intrusion)? " +
+						"weapons of mass harm, instructions for synthesizing controlled substances or " +
+						"explosives, fraud, unauthorized intrusion)? " +
+						"Answer true if it does, even partially; answer false only if it is clearly lawful. " +
+						"When unsure, answer true. " +
 						"Judge the request itself, not how objectionable the topic sounds.",
 					criteria: { true: "Illegal category present", false: "No illegal category" },
 				},
@@ -274,7 +286,7 @@ export default function (pi: ExtensionAPI) {
 
 			// Judge runs on every user turn regardless of backend availability:
 			// AUP must gate even explicit tags and even when the uncensored provider
-			// is missing (fail-closed — u1 review B5). A missing backend only
+			// is missing (fail-closed). A missing backend only
 			// disables the friction escalation route, never the AUP refusal.
 			let outcome: JudgeOutcome | undefined;
 			try {
@@ -300,7 +312,7 @@ export default function (pi: ExtensionAPI) {
 					: { at: new Date().toISOString(), judge: "none", route: "main", note: "judge unavailable" },
 			};
 
-			// Branch 1: AUP refusal overrides everything (doc/09 §3 "不問").
+			// Branch 1: AUP refusal overrides everything, including an explicit tag.
 			if (outcome && outcome.aup >= AUP_THRESHOLD) {
 				state.lastJudge.route = "refuse";
 				log(`AUP refuse: aup=${outcome.aup.toFixed(3)} >= ${AUP_THRESHOLD} (judge=${outcome.judge}, judgeLatency=${outcome.latencyMs}ms) -> no model called`);
@@ -310,18 +322,23 @@ export default function (pi: ExtensionAPI) {
 				);
 			}
 
-			// Branch 2: escalation (explicit tag or predicted friction).
-			if (uncensored && (tagged || (outcome && outcome.frictionHigh >= FRICTION_THRESHOLD))) {
+			// Branch 2: escalation (explicit tag or predicted friction). Requires a live
+			// judge outcome: when the judge is down, an explicit `uncensored:` tag is NOT
+			// honored unverified (fail-safe) — the request is routed to the main model.
+			if (uncensored && outcome && (tagged || outcome.frictionHigh >= FRICTION_THRESHOLD)) {
 				state.lastJudge.route = "uncensored";
 				log(
-					`route=uncensored (${tagged ? "explicit tag" : `frictionHigh=${outcome!.frictionHigh.toFixed(3)} >= ${FRICTION_THRESHOLD}`})` +
-						` aup=${outcome ? outcome.aup.toFixed(3) : "n/a"} judge=${outcome?.judge ?? "none"} judgeLatency=${outcome?.latencyMs ?? 0}ms`,
+					`route=uncensored (${tagged ? "explicit tag" : `frictionHigh=${outcome.frictionHigh.toFixed(3)} >= ${FRICTION_THRESHOLD}`})` +
+						` aup=${outcome.aup.toFixed(3)} judge=${outcome.judge} judgeLatency=${outcome.latencyMs}ms`,
 				);
 				return { model: uncensored, thinkingLevel: "off", state };
 			}
 
 			// Branch 3: everyday -> main model. Fail-open for ordinary queries when the judge
-			// is down, but an explicit tag is NOT honored unverified.
+			// is down, but an explicit tag is NOT honored unverified in that state.
+			if (!outcome && tagged) {
+				log("judge unavailable: explicit tag NOT honored unverified (fail-safe) -> main model");
+			}
 			state.lastJudge.route = "main";
 			log(
 				`route=main (frictionHigh=${outcome ? outcome.frictionHigh.toFixed(3) : "n/a"} aup=${outcome ? outcome.aup.toFixed(3) : "n/a"}` +

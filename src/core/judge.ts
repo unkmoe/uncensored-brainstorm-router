@@ -1,5 +1,5 @@
 /**
- * Dual-question judge, centralized for the HTTP core (doc/09 §2-4).
+ * Dual-question judge, centralized for the HTTP core.
  *
  * Backend 1: Jev (jev-1.13) via direct System One HTTP (jev.ts) — preferred.
  * Backend 2: real next-token logprobs from the RunPod vLLM endpoint — fallback
@@ -7,8 +7,8 @@
  *
  * Prompt wording is copied VERBATIM from pi-extensions/brainstorm-router.ts
  * (jevJudge / vllmJudge). Do not edit: the calibrated thresholds
- * (friction 0.2 / AUP 0.5, worker-reports/p2-jevcal.md) correspond to these
- * exact prompts.
+ * (friction 0.2 / AUP 0.6; raw results in calibration/results/)
+ * correspond to these exact prompts.
  */
 
 import { UNC_BASE, UNC_MODEL, JUDGE_MODE, log, type JudgeMode } from "./config.js";
@@ -51,7 +51,7 @@ export interface JudgeOutcome {
 
 async function jevJudge(text: string): Promise<JudgeOutcome> {
 	const t0 = Date.now();
-	// doc/09 §2: both questions in ONE classify call (marginal cost ~zero).
+	// Both questions in ONE classify call (marginal cost ~zero).
 	const answer = await jevClassifyDual(text, {
 		friction: {
 			type: "choice",

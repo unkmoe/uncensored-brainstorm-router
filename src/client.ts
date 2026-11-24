@@ -2,7 +2,7 @@
  * runpod-client — thin fetch-based client for the RunPod REST API v2
  * (https://api.runpod.io/v2).
  *
- * Design goals (doc/04-budget-automation-design.md §2):
+ * Design goals:
  * - minimal dependencies (global fetch only)
  * - `Authorization: Bearer` auth
  * - 429: honor `Retry-After` (+ jitter). The RunPod docs state a 429 only

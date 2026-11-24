@@ -150,12 +150,14 @@ the Qwen backend can emit a populated array with `finish_reason: stop` under for
 | `RUNPOD_API_KEY` | everywhere | — | RunPod key (management + AI API) |
 | `RUNPOD_OPENAI_BASE` | core, extension | *(required — none bundled; fail-fast when unset)* | Your backend's OpenAI-compatible base |
 | `RUNPOD_UNCENSORED_MODEL` | core, extension | `huihui-ai/Qwen2.5-32B-Instruct-abliterated` | Model id to force server-side |
+| `BRAINSTORM_JUDGE` | extension | `auto` | Judge backend for the router: `jev` \| `vllm` \| `auto` |
 | `CORE_PORT` / `CORE_HOST` | core | `8787` / `127.0.0.1` | HTTP core bind |
 | `CORE_API_KEY` | core | unset | If set, clients must send this Bearer |
 | `CORE_JUDGE_MODE` | core | `auto` | `jev` \| `vllm` \| `auto` |
 | `BALANCE_FLOOR` | core | `1.00` | Startup warning threshold (USD) |
 | `JEV_BASE_URL` / `JEV_MODEL` / `JEV_TIMEOUT_MS` | core | System One defaults | Judge endpoint override (e.g. local llama.cpp) |
 | `OPENCODE_API_KEY` | judge | env | Jev via the opencode provider |
+| `JEV_MODEL_ID` | calibration harness only | `jev-1.13` | Model id override for the Jev battery (`calibration/harness-jev.ts`) |
 
 > No endpoint is bundled: unset `RUNPOD_OPENAI_BASE` fails fast with a clear
 > error at startup. `RUNPOD_UNCENSORED_MODEL` still defaults to the

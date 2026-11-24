@@ -2,9 +2,9 @@
  * Billable-worker detection for serverless endpoints.
  *
  * The workers list (GET /v2/serverless/{id}/workers) mixes real workers with
- * stale placeholder records (doc/04 §7, phase1-deploy.md §2d): e.g. 3 records
- * shown while only 1 worker was actually billed. Discrimination signals,
- * verified against the live API (2026-11-23):
+ * stale placeholder records: e.g. 3 records shown while only 1 worker was
+ * actually billed (verified against the live API 2026-11-23).
+ * Discrimination signals:
  *
  * - `uptimeSeconds` is null until a worker is actually placed and running.
  *   Stale placeholders carry startedAt/DC/GPU but never a live uptime, and

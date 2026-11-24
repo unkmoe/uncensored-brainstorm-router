@@ -5,8 +5,9 @@
  * (Σ billable workers × catalog price) is integrated over the elapsed time
  * since the previous poll into session/day/month buckets (UTC keys).
  * Limits are evaluated per bucket; warn/breach/throttle flags fire once per
- * bucket to avoid log spam. Balance-API reflection is delayed (doc/04 §7), so
- * all buckets are estimate-based; the balance floor is a separate guarantee.
+ * bucket to avoid log spam. Balance-API reflection is delayed (spend shows
+ * up only after scale-down), so all buckets are estimate-based; the balance
+ * floor is a separate guarantee.
  */
 
 import { existsSync, readFileSync, renameSync, writeFileSync } from 'node:fs';

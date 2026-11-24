@@ -43,7 +43,7 @@ export interface GovernorConfig {
   pollIntervalSeconds: number;
   /** Warn at warnRatio × limit. Breach (and throttle, with --apply) at 1.0 × limit. */
   warnRatio: number;
-  /** GET /v2/billing/balance floor (USD). Note: balance reflects only after scale-down (doc/04 §7). */
+  /** GET /v2/billing/balance floor (USD). Note: the balance API reflects spend only after scale-down, so this is a conservative floor guarantee. */
   balanceFloorUsd?: number;
   balanceFloorAction: 'warn' | 'throttle';
   /** Also monitor endpoints not listed in `endpoints` (limits: defaultLimits). */

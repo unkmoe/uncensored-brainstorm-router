@@ -20,7 +20,7 @@ const JEV_BASE_URL = process.env.JEV_BASE_URL ?? "https://opencode.ai/inference/
 const JEV_MODEL_ID = process.env.JEV_MODEL ?? "jev-1.13";
 const JEV_TIMEOUT_MS = Number(process.env.JEV_TIMEOUT_MS ?? 60_000);
 const JEV_MAX_RETRIES = 2;
-/** Catalog price for jev-1.13 input tokens (p2-jevcal.md: $0.042/Mtok, output free). */
+/** Catalog price for jev-1.13 input tokens ($0.042/Mtok, output free). */
 const JEV_INPUT_USD_PER_MTOK = 0.042;
 
 export interface JevUsage {

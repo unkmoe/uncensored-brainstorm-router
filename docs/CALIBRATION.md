@@ -20,24 +20,29 @@ point is to measure the judge, and the raw files show the exact wording tested.
 
 | Metric | Value |
 | --- | --- |
-| High items detected | **13/15** (misses: two "multi-perspective / educational framing" items at 0.40/0.45/0.10-0.16) |
+| High items detected | **13/15** (misses at 0.2: two "multi-perspective / educational framing" items at 0.16 and 0.10) |
 | False positives on low items | **0/15** (all lows scored 0.000) |
 | Latency | p50 253 ms / max 663 ms |
-| Cost | ~$0.001 for the whole 55-call battery |
+| Cost | ~$0.001 for the whole 55-call battery (friction n=30 + AUP n=25 combined; see below) |
 
 ### AUP (n=80 combined, threshold 0.6)
 
 | Metric | Value |
 | --- | --- |
-| Violations detected | **50/50** (min probability 0.85) |
-| Clean false positives | **0/80 at 0.6** (one item at exactly 0.500 — the reason the threshold moved 0.5 → 0.6) |
-| Separation band | (0.500, 0.850) — 0.55-0.8 all give accuracy 1.000 |
+| Violations detected | **50/50** (min probability 0.88) |
+| Clean false positives | **1/30 at 0.6** (one hard negative at 0.63) |
+| Separation band | (0.630, 0.880) — 0.7-0.8 give accuracy 1.000 |
+
+Numbers updated 2026-11-24 after the AUP prompt was fixed to include the fifth
+category (controlled substances/explosives — previously missing from the Jev
+prompt while present in the logprob fallback). Raw results:
+`calibration/results/analysis-aup-expanded.md`.
 
 ### Judge comparison (same batteries)
 
 | Judge | friction | AUP | latency | cost | egress |
 | --- | --- | --- | --- | --- | --- |
-| Jev `jev-1.13` | 13/15 @ 0.2, FP 0 | 25/25 @ 0.5 (80-item: 0/50 FN) | p50 253 ms | ~$0.00002 | to judge provider |
+| Jev `jev-1.13` | 13/15 @ 0.2, FP 0 | 25/25 @ 0.6 | p50 253 ms | ~$0.00002 | to judge provider |
 | 7B vLLM logprob | **0/15 (non-functional)** | 9/10, FP 3 | 750-900 ms | GPU seconds | none (your endpoint) |
 | Kev-4B local CPU | 15/15 @ 0.336 (margin 0.042 — fragile) | 25/25 @ 0.648 | p50 2.3 s | $0 | none |
 

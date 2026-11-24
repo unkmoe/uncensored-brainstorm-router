@@ -9,8 +9,10 @@ called*. This document states what the judge blocks and what you may configure.
 
 The judge refuses (no model is called) when the **request itself** — judged on its
 topic and framing, not on how objectionable the subject sounds — falls into any of
-the following illegal content categories. This enumeration matches the AUP prompt
-embedded in `pi-extensions/brainstorm-router.ts` exactly:
+the following illegal content categories. This enumeration matches the AUP prompts
+embedded in this package exactly — the Jev judge prompt in
+`pi-extensions/brainstorm-router.ts` (mirrored in `src/core/judge.ts` and the
+calibration harnesses) and the logprob fallback prompt:
 
 1. **Sexual content involving minors**
 2. **Instructions for serious violence or weapons of mass harm**
@@ -32,12 +34,16 @@ categories score 0.95+ (`calibration/results/analysis-jev.md`).
 
 ## What you may and may not configure
 
-- **Configurable:** friction (escalation) threshold, judge backend selection,
-  backend endpoints/models, budget limits.
-- **Not configurable:** the **AUP threshold (0.6)** and the **blocked-category
-  enumeration above**. Removing or loosening the AUP gate is out of spec for this
-  package — the gate is the package's license to exist. Deployment operators are
-  of course free to fork, but a build without the gate is not this project.
+- **Configurable:** judge backend selection, backend endpoints/models, budget
+  limits.
+- **Not configurable:** the **AUP threshold (0.6)**, the **friction threshold
+  (0.2)**, and the **blocked-category enumeration above**. Both thresholds are
+  fixed constants in the source (`AUP_THRESHOLD` / `FRICTION_THRESHOLD`) — there is
+  no environment variable or CLI flag for them; changing one is a source edit plus
+  a calibration re-run ([docs/CALIBRATION.md](docs/CALIBRATION.md)). Removing or
+  loosening the AUP gate is out of spec for this package — the gate is the
+  package's license to exist. Deployment operators are of course free to fork, but
+  a build without the gate is not this project.
 
 ## Measured enforcement quality
 

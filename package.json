@@ -1,7 +1,7 @@
 {
   "name": "uncensored-brainstorm-router",
   "version": "0.1.0",
-  "description": "Dual-question judge router for lawful uncensored LLM use: AUP refusal + friction-based escalation, with a calibration battery. OpenAI-compatible HTTP core (core/) is added by integration.",
+  "description": "Dual-question judge router for lawful uncensored LLM use: AUP refusal + friction-based escalation. Bundles the pi extension, an OpenAI-compatible HTTP core (src/core), a budget governor (src/governor), and a calibration battery.",
   "type": "module",
   "license": "Apache-2.0",
   "engines": {
@@ -12,6 +12,7 @@
     "src",
     "pi-extensions",
     "calibration",
+    "docs",
     "README.md",
     "AUP.md",
     "LICENSE",

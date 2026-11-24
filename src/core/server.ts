@@ -1,6 +1,5 @@
 /**
- * OpenAI-compatible HTTP core — the standalone product surface
- * (doc/10 Phase 3 Wave 1: "OpenAI 互換 HTTP コア").
+ * OpenAI-compatible HTTP core — the standalone product surface.
  *
  * Endpoints:
  *   GET  /health                — status + RunPod balance (checked at startup)
@@ -9,9 +8,11 @@
  *
  * Every chat request passes the centralized dual-question judge (judge.ts,
  * same calibrated prompts/thresholds as pi-extensions/brainstorm-router.ts):
- *   aup >= 0.5                        -> REFUSE (OpenAI error shape, no model call)
- *   `uncensored:` tag or friction>=0.2 -> route "uncensored" -> RunPod 24B
- *   otherwise                          -> route "default"     -> RunPod 24B
+ *   aup >= 0.6                                       -> REFUSE (OpenAI error shape, no model call)
+ *   judge unavailable (backend down)                  -> route "default" (an explicit `uncensored:`
+ *                                                       tag is unverified and NOT honored)
+ *   `uncensored:` tag (judge-verified) or friction>=0.2 -> route "uncensored" -> RunPod 24B
+ *   otherwise                                         -> route "default"     -> RunPod 24B
  *
  * Decisions are surfaced in response headers (X-Judge-Friction / X-Judge-Aup /
  * X-Judge-Latency-Ms / X-Judge-Backend / X-Judge-Route) and logged to stderr
@@ -209,21 +210,22 @@ async function handleChatCompletions(req: http.IncomingMessage, res: http.Server
 	const text = lastUserText(body.messages as readonly ChatMessageLike[]);
 	const tagged = hasUncensoredTag(text);
 
-	// Judge runs on every user turn: AUP must gate even explicit tags (doc/09 §3).
+	// Judge runs on every user turn: AUP must gate even explicit tags.
 	let outcome: JudgeOutcome | null = null;
 	if (text.trim().length > 0) {
 		try {
 			outcome = await runJudge(text);
 		} catch (error) {
 			// Judge entirely down (Jev failed AND vllm fallback failed).
-			// Fail open for ordinary requests, but do NOT honor an explicit
-			// uncensored tag unverified (same policy as the router).
+			// Fail open for ordinary requests (they route to "default"), but do
+			// NOT honor an explicit uncensored tag unverified: an unverified tag
+			// also falls back to "default" (see the route decision below).
 			const msg = error instanceof Error ? error.message : String(error);
 			log(`judge failed: ${msg} (fail-open, tagged=${tagged} unverified)`);
 		}
 	}
 
-	// Branch 1: AUP refusal overrides everything (doc/09 §3 "不問"). No model call.
+	// Branch 1: AUP refusal overrides everything, explicit tags included. No model call.
 	if (outcome && outcome.aup >= AUP_THRESHOLD) {
 		const headers = judgeHeaders(outcome, "refuse");
 		log(
@@ -247,10 +249,19 @@ async function handleChatCompletions(req: http.IncomingMessage, res: http.Server
 	// Branch 2/3: both routes are served by the RunPod 24B backend. The only
 	// aligned "main model" in this standalone core is the same endpoint; the
 	// distinction is recorded in headers/logs for observability.
-	const route = tagged || (outcome !== null && outcome.frictionHigh >= FRICTION_THRESHOLD) ? "uncensored" : "default";
+	// Fail-closed for tags: when the judge is entirely down (outcome === null)
+	// an explicit uncensored tag is unverified and MUST NOT reach the
+	// uncensored route — it falls back to "default" like any other request.
+	if (tagged && outcome === null) {
+		log("tag unverified (judge down) -> default");
+	}
+	const route =
+		outcome !== null && (tagged || outcome.frictionHigh >= FRICTION_THRESHOLD)
+			? "uncensored"
+			: "default";
 	const headers = judgeHeaders(outcome, route);
 	log(
-		`route=${route} (${tagged ? "explicit tag" : outcome ? "judge" : "judge unavailable"}) ` +
+		`route=${route} (${tagged && outcome !== null ? "explicit tag" : outcome ? "judge" : "judge unavailable"}) ` +
 			`frictionHigh=${outcome ? outcome.frictionHigh.toFixed(3) : "n/a"} ` +
 			`aup=${outcome ? outcome.aup.toFixed(3) : "n/a"} judge=${outcome?.backend ?? "none"} ` +
 			`judgeLatency=${outcome?.latencyMs ?? 0}ms` +

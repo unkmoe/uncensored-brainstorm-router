@@ -36,7 +36,10 @@ The default setup this README assumes:
   be configured — mundane turns go to it.
 - **Node.js 20+** — runs the extension and the bundled tooling (`npm install`).
 - **RunPod account (prepaid)** — hosts the uncensored backend. Create an API key
-  in the console (Settings → API Keys) with serverless management and billing read.
+  in the console (Settings → API Keys) with serverless management, billing read,
+  and **AI API access — for *Restricted* keys this is granted per endpoint in the
+  console UI only**; without it every inference call 403s. See
+  [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 - **OpenCode account with prepaid credits** — powers the default judge: Jev
   (`jev-1.13`), a decision model for typed judgments. The judge receives your
   message text on every turn; the paid variant does not train on it, while the
@@ -89,7 +92,7 @@ To make it permanent, copy `pi-extensions/brainstorm-router.ts` to
 | --- | --- |
 | `pi -e ./pi-extensions/brainstorm-router.ts --model router/brainstorm` | The router (this README's subject) |
 | `npm run smoke` | Read-only RunPod connectivity check |
-| `npm run governor -- --config governor.config.example.json` | Budget monitor — omit `--apply` to watch only; add it to auto-throttle when limits are exceeded |
+| `npm run governor -- --config governor.config.json` | Budget monitor — first `cp governor.config.example.json governor.config.json` and replace the placeholder endpoint IDs (and set limits); omit `--apply` to watch only, add it to auto-throttle. See [docs/GOVERNOR.md](docs/GOVERNOR.md) |
 
 ## Limitations
 
@@ -109,10 +112,10 @@ nothing with the local judge. Budget caps and monitoring:
 [docs/GOVERNOR.md](docs/GOVERNOR.md).
 
 **What if the judge is unavailable?** The router falls back to a logprob judge —
-built from your own backend's word probabilities with a one-token call: AUP
-refusals keep working, automatic friction escalation does not (an explicit
-`uncensored:` still forces the route). A fully local CPU judge is also
-available — [docs/JUDGE.md](docs/JUDGE.md).
+built from your own backend's word probabilities with two parallel one-token
+calls (one per question): AUP refusals keep working, automatic friction
+escalation does not (an explicit `uncensored:` still forces the route). A fully
+local CPU judge is also available — [docs/JUDGE.md](docs/JUDGE.md).
 
 ## Documentation
 

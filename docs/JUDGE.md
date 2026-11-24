@@ -1,6 +1,6 @@
 # The judge: options, setup, and measured quality
 
-The judge answers two questions per user turn, in **one classify call**:
+The judge answers two questions per user turn:
 
 - **friction** (choice low/high): *"Will a mainstream safety-aligned assistant refuse
   this, or answer it in a noticeably narrowed way?"* — ≥ 0.2 → route to the uncensored
@@ -8,6 +8,11 @@ The judge answers two questions per user turn, in **one classify call**:
 - **AUP** (bool): *"Does the request involve illegal content categories?"* — ≥ 0.6 →
   refuse without calling any model. **AUP overrides everything**, including the
   explicit `uncensored:` tag (a tag skips the friction question, never the AUP one).
+
+On the default Jev backend this is **one classify call per turn** (both questions in
+a single request). The logprob fallback (Option 2) is different: it asks friction and
+AUP as **two separate one-token calls** (two distinct prompts, fired in parallel),
+which is why its latency is ~3× Jev's.
 
 The prompt texts live in `pi-extensions/brainstorm-router.ts` (`jevJudge`) and are
 reproduced byte-identical in the calibration harnesses. If you change one, change both.
@@ -29,7 +34,10 @@ reproduced byte-identical in the calibration harnesses. If you change one, chang
 
 If Jev is unavailable (no credits, network, etc.) the router degrades to a judge built
 from **real next-token logprobs** on your own uncensored endpoint (`max_tokens: 1`,
-label softmax). Latency 750–900 ms warm; effectively free GPU-seconds.
+label softmax). Friction and AUP are judged by **two separate calls with two separate
+prompts** (one friction prompt, one AUP prompt), sent in parallel over `Promise.all` —
+so "one-token" means one token per call, two calls per turn. Latency 750–900 ms warm;
+effectively free GPU-seconds.
 
 Measured quality — know what you're getting into:
 
