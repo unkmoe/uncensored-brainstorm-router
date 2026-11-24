@@ -73,11 +73,13 @@ To make it permanent, copy `pi-extensions/brainstorm-router.ts` to
 
 ## Limitations
 
-- Tool calls are backend-dependent (default 32B: 10/10 on weak instructions; the
-  Dolphin alternative: 0/5 even on explicit instructions — chat only).
-- Calibration sets are ours (JP-heavy brainstorming, n=80 AUP / n=30 friction);
-  re-run the harness for your topics ([docs/CALIBRATION.md](docs/CALIBRATION.md)).
-- **AUP threshold (0.6) is fixed by spec** ([AUP.md](AUP.md)).
+- Tool-call behavior is a property of the backend model, not of the router — the
+  default backend fires them reliably; the alternative is chat-only. Details and
+  parser recipes: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+- The judge's thresholds are calibrated on our topics — re-calibrate for yours
+  with the bundled harness: [docs/CALIBRATION.md](docs/CALIBRATION.md).
+- **The AUP threshold is fixed by spec** — not a configuration option
+  ([AUP.md](AUP.md)).
 
 ## FAQ
 
