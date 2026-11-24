@@ -1,7 +1,6 @@
 # uncensored-brainstorm-router
 
-A **pi extension** that removes alignment friction from lawful brainstorming — with an
-illegal-category gate built into the same judge.
+A pi extension that removes alignment friction from brainstorming.
 
 Every user turn is classified once (friction + legality, ~250 ms). The turn then goes
 to your normal session model, to an uncensored RunPod backend, or — for illegal
