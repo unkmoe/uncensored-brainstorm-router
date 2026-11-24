@@ -174,6 +174,17 @@ usage; they are resume-aware and budget-guarded).
 - Use: **lawful use only** — see [AUP.md](AUP.md). The illegal-category gate is part
   of the package; its threshold (0.5) is fixed by spec and not configurable.
 
+## Limitations
+
+- **Tool calls are best-effort on the uncensored backend.** Requests *carrying* tool
+d  definitions no longer crash (fixed via `ENABLE_AUTO_TOOL_CHOICE` + `TOOL_CALL_PARSER=mistral`),
+  but the backend actually *firing* a tool call is unreliable: the 24B Dolphin/Venice fine-tune
+  was not trained for tool use, and runtime fp8 quantization degrades strict format adherence.
+  For "research-then-brainstorm" workflows, have the *host* agent gather context with its own
+  tools and pass the material to the backend (the recommended pattern — see the pi extension's
+  delegation flow). If you need a backend that both is uncensored and calls tools reliably,
+  watch for the Qwen-abliterated backend experiments; open an issue to signal demand.
+
 ## MCP adapter
 
 **Planned.** The MCP adapter is deliberately out of wave 1 (tool-result shaping by
