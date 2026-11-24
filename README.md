@@ -4,7 +4,7 @@ A pi extension that removes alignment friction from brainstorming.
 
 Every user turn is classified once (friction + legality, ~250 ms). The turn then goes
 to your normal session model, to an uncensored RunPod backend, or — for illegal
-categories — to a hard refusal with **no model called at all**:
+categories — to a hard refusal with no model called at all:
 
 ```
 your message
