@@ -3,6 +3,17 @@
 Everything here was measured on real endpoints in Nov 2026. Config JSONs are
 copy-paste-ready for `POST /v2/serverless` (RunPod REST API v2, Bearer auth).
 
+## RunPod API key pitfalls (read before your first 403)
+
+- A key needs **three kinds of permission**: serverless management (create/list
+  endpoints), billing read (governor, smoke), and **AI API access — which for
+  *Restricted* keys is granted per endpoint in the console UI only**. There is no
+  REST call that grants it.
+- Symptom: management requests (catalog, balance, endpoint list) succeed while
+  every inference-gateway call (`api.runpod.ai`) returns **403**. Fix: add your
+  endpoint to the key's AI API allow-list in the console, or use a key type that
+  includes AI API access.
+
 ## Default recipe — Qwen2.5-32B-Instruct-abliterated fp8 × A40
 
 The default backend of the router. Uncensored *and* tool-call capable (the only
@@ -127,6 +138,10 @@ only while the volume exists):
 Always set both `ENABLE_AUTO_TOOL_CHOICE=true` and `TOOL_CALL_PARSER=<parser>`.
 Requests merely *carrying* tool definitions crash the worker without them — that
 matters because agent harnesses (pi, Claude Code) attach tools to every request.
+
+Client-side, detect a fired call by the **`tool_calls` array, not `finish_reason`**:
+the Qwen backend can emit a populated array with `finish_reason: stop` under forced
+`tool_choice`, and the Dolphin backend can leak raw JSON into message content.
 
 ## Environment variables (full list)
 

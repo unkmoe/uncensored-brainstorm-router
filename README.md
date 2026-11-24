@@ -52,16 +52,6 @@ Make it permanent: copy `pi-extensions/brainstorm-router.ts` to
    default (Qwen2.5-32B-abliterated fp8 × A40, tool-call capable, scale-to-zero):
    [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
-## Gotchas
-
-- Management API works but inference 403s → per-endpoint AI API grant missing (link above).
-- First request after idle can take minutes (cold start) and may 504 — the job usually
-  completes; retry. Numbers: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
-- Tool calls: judge them by the `tool_calls` array, not `finish_reason`.
-
-Full limitations (backend-dependent tool calls, fp8 quality caveat, calibration
-scope): [Limitations](#limitations) below.
-
 ## Advanced: HTTP core
 
 The same judge and gate also ship as an OpenAI-compatible HTTP server
