@@ -1,214 +1,228 @@
 # uncensored-brainstorm-router
 
-A judge-based router that lets you use uncensored LLM backends **lawfully and without
-alignment friction**: a lightweight dual-question classifier runs on every user turn,
-then routes the turn to a mainstream model, an uncensored backend, or — for illegal
-content categories — to a hard refusal without any model being called at all.
+**Removes alignment friction from lawful brainstorming — while shipping an illegal-category gate in the same package.**
 
-This is **not** a jailbreak project. The goal is to remove *alignment friction*
-(refusals, hedging, topic-narrowing on lawful but controversial material) while
-**shipping an explicit illegal-category gate in the same package**. The judge is
-dual-use by design: the same classifier that escalates lawful friction also refuses
-illegal categories, and the AUP threshold is **not user-configurable** (see
-[AUP.md](AUP.md) — this is a spec, not an oversight).
-
-## Measured results (2026-11-24, Jev calibration)
-
-All numbers are from a 55-item calibration battery (`calibration/`, raw results in
-`calibration/results/`, analysis in `calibration/results/analysis-jev.md`):
-
-| Metric | Value |
-| --- | --- |
-| Friction detection (high items, threshold 0.2) | **13/15 detected, 0 false positives** (low items all 0.000) |
-| AUP illegal-category accuracy (threshold 0.5) | **25/25** (separation band (0.450, 0.950)) |
-| Judge latency | **p50 253 ms** (max 663 ms) per user turn |
-| Judge cost | ~$0.00002 per judgment (~512 tokens); 1,000 turns ≈ $0.02 |
-| Session cost | **~$0.6 per 30-min brainstorm session** (warm) |
-| Backend | **Qwen2.5-32B-Instruct-abliterated fp8 × A40 serverless (default), $1.22/hr**, FlashBoot revival ~51 s, tool_call capable. Dolphin-Mistral-24B-Venice fp8 is the alternative backend (same price, ~23 tok/s, **not recommended for tool use** — needs explicit forcing instructions) |
-
-Two question types share one classify call per user turn:
-
-- **friction** (choice low/high): *would a mainstream safety-aligned assistant refuse
-  or noticeably narrow this?* ≥ 0.2 → route to the uncensored backend.
-- **AUP** (bool): *does the request involve an illegal content category?* ≥ **0.5
-  (fixed)** → refuse without calling any model. AUP overrides everything, including
-  an explicit `uncensored:` tag.
-
-## What's in this repo
-
-- `pi-extensions/brainstorm-router.ts` — pi virtual model `router/brainstorm`
-  implementing the 3-branch routing above, with judge fallbacks (Jev classifier →
-  real next-token logprobs from the vLLM endpoint) and full decision logging.
-- `pi-extensions/judge-probe.ts` — diagnostic probe for judge availability.
-- `src/` — typed RunPod API v2 client (429-aware, rate-limit headers exposed),
-  budget governor (`src/governor/`, session/day/month caps with auto-throttle),
-  generated API schema.
-- `calibration/` — test sets (`friction.yaml` 30 items, `aup.yaml` 25 items),
-  calibration harnesses, analyzers, and raw results.
-- `core/` — **not included yet** (see below).
-
-## OpenAI-compatible HTTP core (planned, being integrated)
-
-The distribution center of this package is a small HTTP core that exposes the whole
-routing stack as an ordinary OpenAI-compatible endpoint, so any agent layer
-(pi, Cursor, Open WebUI, claude-code-router, …) can use it without an adapter:
+A dual-question judge classifies every user turn and routes it in three ways: to a
+mainstream model (mundane turns), to an uncensored RunPod backend (lawful turns that
+mainstream assistants would refuse or dilute), or to a **hard refusal with no model
+called at all** (illegal categories). Exposes an ordinary OpenAI-compatible API, so
+any agent layer — pi, Cursor, Open WebUI, claude-code-router — can use it as a model.
 
 ```
-POST /v1/chat/completions     # OpenAI-compatible request/response
-                              # streaming (SSE) supported
+Judge (Jev, one call/turn, ~250 ms) ─┬─ AUP ≥ 0.6      → REFUSE (no model billed)
+                                     ├─ friction ≥ 0.2 → uncensored backend (32B, $1.22/hr)
+                                     └─ otherwise      → mainstream model
 ```
 
-The core embeds the dual-question judge, the 3-branch routing, and the budget
-check; judgment logic lives in exactly one place.
+Measured, not claimed: friction **13/15 detected, 0 false positives** · illegal-category
+accuracy **50/50 violations caught** (80-item battery) · judge cost **~$0.00002/turn** ·
+session cost **~$0.6 / 30 min** · full raw results in [docs/CALIBRATION.md](docs/CALIBRATION.md).
 
-### Using the core from pi (`models.json`)
+> **This is not a jailbreak project.** The judge is dual-use by design: the same
+> classifier that escalates lawful friction also refuses illegal categories, and the
+> AUP threshold is fixed by spec, not configurable. See [AUP.md](AUP.md).
 
-Once the core is running (e.g. on `localhost:8787`), add it to your pi `models.json`
-as an OpenAI-compatible provider:
+## The problem
 
-```json
-{
-  "modelProviders": {
-    "brainstorm-core": {
-      "baseUrl": "http://localhost:8787/v1",
-      "apiKey": "$BRAINSTORM_CORE_KEY",
-      "api": "openai-completions",
-      "models": [
-        {
-          "id": "brainstorm",
-          "name": "Brainstorm router (HTTP core)",
-          "reasoning": false,
-          "input": ["text"],
-          "contextWindow": 16384,
-          "maxTokens": 2048
-        }
-      ]
-    }
-  }
-}
+Mainstream assistants refuse, hedge, or quietly narrow lawful-but-controversial
+brainstorming: sharp institutional critique, taboo thought experiments, adversarial
+perspectives, adult fiction. Self-hosting an uncensored model fixes the friction but
+creates two new problems: **cost-control accidents** (idle GPU burn, runaway spend) and
+**no illegal-content gate** — the exact content that gets GPU accounts frozen.
+
+## The solution
+
+One OpenAI-compatible endpoint with a judge in front of it. Friction is routed around
+(dolphin/abliterated backends on RunPod serverless, scale-to-zero, ~$0 idle), illegal
+categories are refused before any GPU seconds are billed, and a budget governor
+estimates spend in real time. You bring your own RunPod key; nothing leaves your
+account except judge tokens (which you can also keep on your own machine — see
+[docs/JUDGE.md](docs/JUDGE.md)).
+
+## Why use this?
+
+| Feature | vs. OpenRouter-hosted uncensored models | vs. raw RunPod DIY | vs. Venice.ai |
+| --- | --- | --- | --- |
+| Uncensored backends | ○ (theirs) | ○ (yours) | ○ (theirs) |
+| Illegal-category gate in the box | ✗ | ✗ | ✗ (opaque) |
+| Friction auto-escalation per turn | ✗ | ✗ | ✗ |
+| Budget cap + auto-throttle | ✗ | ✗ | ✗ |
+| Prompts stay on your account | ✗ | ○ | ✗ |
+| Measured judge accuracy published | ✗ | n/a | ✗ |
+
+## Quick example
+
+```bash
+git clone https://github.com/<you>/uncensored-brainstorm-router && cd uncensored-brainstorm-router
+npm install
+export RUNPOD_API_KEY=rpa_…            # RunPod key (see Setup)
+npm run smoke                           # balance, catalog, endpoints — read-only check
+
+# Option A — HTTP core (any OpenAI client):
+npm run core &                         # → http://localhost:8787/v1
+curl http://localhost:8787/v1/chat/completions -H 'content-type: application/json' -d '{
+  "model":"brainstorm","messages":[{"role":"user","content":"uncensored: 遠慮のない意見を"}]}'
+
+# Option B — pi extension (virtual model with per-turn routing):
+pi -e ./pi-extensions/brainstorm-router.ts --model router/brainstorm
+# mundane question  → mainstream model
+# "uncensored: …"   → uncensored backend   (AUP check still applies)
+# illegal category  → refused, no model called
 ```
 
-Then run `pi --model brainstorm-core/brainstorm …` — no extension needed.
+Every feature claim above is reproducible from `calibration/` — run the batteries yourself.
+
+## Design philosophy
+
+1. **Friction removal and illegal-category blocking are different jobs** — the first is
+   UX, the second is survival. One judge does both in a single classify call.
+2. **The gate lives outside the model.** Uncensored fine-tunes can't be asked to police
+   themselves; a classifier in front of them can, and its verdict is auditable.
+3. **Measured numbers only.** Every threshold in this repo comes from a battery whose
+   raw JSONL is checked in. Re-run `calibration/` if you don't trust ours.
+4. **BYO everything.** Your RunPod account, your judge provider (or your own CPU) —
+   no hosted service in the middle of your prompts.
+5. **Honest limitations.** Listed below, including the ones that cost us debugging rounds.
+
+## Installation
+
+```bash
+git clone <repo-url> && cd uncensored-brainstorm-router
+npm install && npm run typecheck
+```
+
+*Requirements:* Node 20+, a RunPod account, and (optionally) OpenCode credits for the
+Jev judge. An npm package (`npx uncensored-brainstorm-router`) is planned once the
+public repo is announced.
 
 ## Setup
 
-### 1. RunPod API key
+1. **RunPod API key** — console → Settings → API Keys. Grant: serverless management,
+   billing read, and **AI API access per endpoint** (the per-endpoint grant is the #1
+   pitfall — see Troubleshooting).
+2. **Judge** — default is Jev via OpenCode credits (`jev-1.13`, ~$0.00002/judgment, no
+   training on your data). Alternatives: your own vLLM logprob judge, or a fully local
+   CPU judge. Details: [docs/JUDGE.md](docs/JUDGE.md).
+3. **Backend** — one RunPod serverless endpoint. Default recipe: Qwen2.5-32B-Instruct-
+   abliterated fp8 on A40, $1.22/hr, tool-call capable, scale-to-zero. Copy-paste
+   config JSON: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+4. Point the router at it: `RUNPOD_OPENAI_BASE=https://api.runpod.ai/v2/<id>/openai/v1`
+   (+ `RUNPOD_UNCENSORED_MODEL`), then start `npm run core` or the pi extension.
 
-Create a key in the RunPod console (Settings → API Keys). Two permissions matter:
+## Commands & API
 
-- **Management API** (serverless endpoint create/list, billing/balance read) —
-  needed by the budget governor and `src/smoke.ts`.
-- **AI API (inference gateway)** — needed to actually call your endpoints.
+| Command | What it does |
+| --- | --- |
+| `npm run core` | OpenAI-compatible HTTP core on :8787 (`/v1/chat/completions` streaming, `/v1/models`, `/health`) |
+| `npm run smoke` | Read-only RunPod connectivity check (balance, catalog, endpoints) |
+| `npm run governor -- --config <f>` | Budget monitor (dry-run); `--apply` adds auto-throttle |
+| `pi -e ./pi-extensions/brainstorm-router.ts --model router/brainstorm` | pi virtual model with per-turn routing |
 
-> **Pitfall (cost us a full debugging round):** with a *Restricted* key, AI API
-> permission is granted **per endpoint in the console UI only** — there is no REST
-> way to grant it. If your management calls work but every inference-gateway call
-> returns **403**, this per-endpoint AI API grant is the reason. Either grant the
-> endpoint permission in the console, or use a key type that includes AI API access.
+Key environment variables (full list in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) and
+the headers of each source file):
 
-Recommended scope list to tick for this project: Serverless management
-(read/create endpoints), Billing read (balance), and AI API on each endpoint you
-will route to.
+| Variable | Purpose |
+| --- | --- |
+| `RUNPOD_API_KEY` | RunPod key (management + inference) |
+| `RUNPOD_OPENAI_BASE` / `RUNPOD_UNCENSORED_MODEL` | Your backend endpoint / model |
+| `OPENCODE_API_KEY` | Jev judge (paid variant, no training) |
+| `BRAINSTORM_JUDGE` | `jev` \| `vllm` \| `auto` (default auto with logprob fallback) |
+| `BALANCE_FLOOR` | Core warns at start if balance is under this (default $1) |
 
-### 2. OpenCode credits (for the Jev judge)
+Core responses carry judge telemetry as headers: `X-Judge-Route`, `X-Judge-Friction`,
+`X-Judge-Aup`, `X-Judge-Latency-Ms`.
 
-The default judge is **Jev** (System One classifier via the `opencode` provider).
-You need an `OPENCODE_API_KEY` with **prepaid credits**. Note: the free variant
-(`jev-1.13-free`) requires a training opt-in and usually 400s; the paid
-`jev-1.13` works and does not train on your data (~$0.00002/judgment). Without
-Jev, the router automatically falls back to a logprob judge running on your own
-vLLM endpoint (`BRAINSTORM_JUDGE=vllm|jev|auto`, default `auto`).
+## Architecture
 
-### 3. Deploy the uncensored backend
-
-Any OpenAI-compatible serverless vLLM endpoint works. The measured default setup is
-**Qwen2.5-32B-Instruct-abliterated fp8 on A40** ($1.22/hr, `TOOL_CALL_PARSER=hermes`,
-`ENABLE_AUTO_TOOL_CHOICE=true`, FlashBoot ON, scale-to-zero — idle cost $0).
-**Container disk must be 100GB** (the 65.5GB bf16 download exceeds the 50GB default).
-Dolphin-Mistral-24B-Venice fp8 works as an alternative backend (same price, ~23 tok/s),
-but is **not recommended for tool use**: it fires tool calls 0/5 on ambiguous
-instructions and needs explicit "you must call the tool" forcing.
-Point the extension at it:
-
-```bash
-export RUNPOD_API_KEY=rpa_…                          # your key
-export RUNPOD_OPENAI_BASE=https://api.runpod.ai/v2/<endpoint-id>/openai/v1
-export RUNPOD_UNCENSORED_MODEL=huihui-ai/Qwen2.5-32B-Instruct-abliterated
-export OPENCODE_API_KEY=…                            # optional; enables the Jev judge
+```
+client (pi / Cursor / Open WebUI / curl)
+   │  OpenAI-compatible
+   ▼
+HTTP core (src/core) ── judge (src/core/jev: System One → Jev; fallback: vLLM logprobs)
+   │                      │ friction choice + AUP bool, ONE classify call per user turn
+   │                      ▼
+   │              AUP ≥ 0.6 ───────────► REFUSE (HTTP 400, no backend call)
+   │              friction ≥ 0.2 ──────► uncensored backend (RunPod serverless vLLM)
+   │              else ────────────────► default/backend route
+   ▼
+RunPod REST v2 (src/client.ts, typed) ── budget governor (src/governor)
 ```
 
-(The checked-in defaults in `pi-extensions/` still point at the author's own
-endpoints; always set `RUNPOD_OPENAI_BASE` for your deployment.)
+pi users get the same logic as a virtual model (`pi-extensions/brainstorm-router.ts`)
+with session-state caching and sticky routing for prompt-cache friendliness.
 
-### 4. Use as a pi extension
+## Troubleshooting (top 5)
 
-```bash
-pi -e ./pi-extensions/brainstorm-router.ts --model router/brainstorm
-```
+1. **403 from the inference gateway but management calls work** — Restricted RunPod
+   keys grant *AI API* access per endpoint in the console only; there is no REST way
+   to grant it. Add your endpoint to the key's AI API allow-list.
+2. **Jev returns 400 / 402** — the free judge variant needs a training opt-in (avoid);
+   the paid `jev-1.13` needs OpenCode credits. Without either, the router silently
+   falls back to the local logprob judge (weaker friction detection — see
+   [docs/CALIBRATION.md](docs/CALIBRATION.md)).
+3. **First request after idle hangs minutes, then a 504** — serverless cold start
+   (model download) can exceed the edge proxy timeout; the job usually completes
+   server-side, so retry. Warm the endpoint with a one-token request first.
+4. **Tool calls look "broken"** — detect them by the `tool_calls` array, not
+   `finish_reason`: the default backend can emit a populated array with
+   `finish_reason: stop` under forced choice.
+5. **Worker boot fails with "ran out of disk"** — 32B backends need container disk
+   **100GB** (the bf16 download is 65.5GB); the 50GB default is too small.
 
-Every user turn is judged; decisions (probabilities, latencies, route) are logged
-to stderr, never API keys. Explicit tag: start your message with `uncensored:` to
-force the uncensored route (still gated by the AUP check).
+## Limitations
 
-### 5. Budget governor (optional but recommended)
+- **Tool calls are backend-dependent.** Default Qwen-32B-abliterated fires reliably
+  (10/10 on weak instructions); Dolphin-24B fired 0/5 even on explicit instructions
+  in follow-up batteries — chat-only, do not route tools to it.
+- **fp8 vs bf16 quality delta is unquantified** (no degradation observed in any
+  battery; measuring needs an A100 at $2.99/hr). Revisit if quality complaints appear.
+- **Cold starts are real**: ~6 min full, ~2.5 min with a volume cache, seconds with
+  FlashBoot — but config changes invalidate the snapshot (1-2 cold requests after any
+  PATCH). Full numbers: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+- **The judge sees your prompts** (hosted Jev). For a zero-egress setup, run the
+  AUP judgment locally on CPU (Kev-4B, verified 25/25) — [docs/JUDGE.md](docs/JUDGE.md).
+- **Calibration sets are ours** (n=80 AUP / n=30 friction, JP+EN). If your topics
+  differ systematically, re-run and re-threshold — that's why the harness is in the box.
+- **AUP threshold (0.6) is fixed by spec.** The category list and rationale:
+  [AUP.md](AUP.md).
 
-```bash
-cp governor.config.example.json governor.config.json   # edit endpoint ids + limits
-npm run governor -- monitor                            # estimates accrual from live workers
-npm run governor -- monitor --apply                    # auto-throttle when over budget
-```
+## FAQ
 
-The governor watches worker count × unit price in real time (RunPod's balance API
-only reflects charges after scale-down, so balance polling is not suitable for
-live monitoring).
+**Is this a jailbreak?** No. It routes lawful-but-frictional content to uncensored
+models and refuses illegal categories before any model runs. The refusal layer cannot
+be configured away.
 
-## Development
+**Why not just use OpenRouter's uncensored models?** Cheaper and zero-ops, and fine for
+many. You lose per-turn friction escalation, the illegal-category gate, budget
+guarantees, and prompt locality — those are what this repo ships.
 
-```bash
-npm install
-npm run typecheck
-npm run build
-```
+**What does a session cost?** ~$0.6 for a 30-min warm brainstorm on the 32B backend
+($1.22/hr, scale-to-zero, $0 idle) plus ~$0.00002/turn for the judge.
 
-Calibration harnesses run as pi extensions (see `calibration/harness-jev.ts` for
-usage; they are resume-aware and budget-guarded).
+**Can the judge run fully offline?** Yes — llama.cpp + Kev-4B on CPU, verified AUP
+25/25, $0, zero egress. Friction detection is thinner there; recommended split:
+AUP local, friction hosted. Details and build steps: [docs/JUDGE.md](docs/JUDGE.md).
 
-## License & use policy
+**My agent's tool-carrying requests crash against vLLM.** Enable
+`ENABLE_AUTO_TOOL_CHOICE` + the right `TOOL_CALL_PARSER` (hermes for Qwen/ChatML,
+mistral for Mistral-native templates) — recipes in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
-- Code: [Apache-2.0](LICENSE).
-- Use: **lawful use only** — see [AUP.md](AUP.md). The illegal-category gate is part
-  of the package; its threshold (0.5) is fixed by spec and not configurable.
+**Will you ship an MCP server?** Planned but deliberately out of the first release:
+host models reshape tool results, which reintroduces a second censorship layer. The
+OpenAI-compatible core avoids that. Open an issue if you need MCP — it's a thin
+wrapper and will be prioritized on demand. Details: [docs/ROADMAP.md](docs/ROADMAP.md).
 
-## Limitations & backend choice (updated 2026-11-24 after the Qwen-32B experiment and the residual-task wave)
+## Documentation
 
-- **Default backend: Qwen2.5-32B-Instruct-abliterated (fp8, A40, `hermes` parser).**
-  Tool calls fire reliably on weak instructions (10/10, temp 0, valid JSON).
-- **Dolphin-24B-Venice is NOT tool-capable for routing purposes**: in follow-up
-  batteries it fired **0/5 even with explicit "you must call the tool" instructions**
-  (intent-in-text only; the single firing observed earlier was a freshly-booted
-  post-PATCH worker). Treat it as a chat-only backend.
-- **Detect tool calls by the `tool_calls` array, not `finish_reason`** (Qwen can emit a
-  populated array with `finish_reason: stop` under forced `tool_choice`; Dolphin leaks
-  raw JSON into content).
-- **Cold start (32B fp8):** full ≈ 6 min (65.5GB bf16 download); with a network-volume
-  model cache ≈ 2.5 min (~61% shorter); FlashBoot revival seconds-to-minutes when the
-  snapshot is valid. **Config changes (env/mounts/flashboot) invalidate the snapshot**
-  — expect 1-2 full-cold requests after any PATCH. First requests after a cold can hit
-  a Cloudflare 504 (~570s) while the job completes server-side; retry succeeds.
-- **Qwen-32B deployment notes:** fp8 ≈ 34GB fits A40 48GB; container disk must be
-  **100GB** (the 65.5GB bf16 download exceeds the 50GB default). Generation ≈ 16 tok/s
-  (~0.7× the 24B).
-- **AUP threshold: 0.6** (80-item calibration: FN 0/50, min violation 0.85, one FP at
-  exactly 0.50; full separation 0.55-0.8). Fixed by spec; not user-configurable.
-- **Local judge option:** llama.cpp + Kev-4B (Apache-2.0) runs the same dual-question
-  battery on CPU with AUP 25/25 correct at ~1.3-2.3s per judgment, $0, zero egress —
-  a viable privacy route for AUP-side gating (friction stays on Jev; margin thin locally).
-- **fp8 vs bf16 quality delta** is not yet quantified (no battery observed degradation;
-  measuring requires an A100 80GB endpoint at $2.99/hr — deferred as low-value).
+- [AUP.md](AUP.md) — content policy, blocked categories, why the threshold is fixed
+- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) — backend recipes, cold starts, tool parsers
+- [docs/JUDGE.md](docs/JUDGE.md) — judge options (Jev / logprob / local CPU), calibration of each
+- [docs/CALIBRATION.md](docs/CALIBRATION.md) — batteries, raw results, how to re-run
+- [docs/GOVERNOR.md](docs/GOVERNOR.md) — budget monitoring, auto-throttle, RunPod billing quirks
+- [docs/ROADMAP.md](docs/ROADMAP.md) — what's planned (MCP adapter, npm package) and why the order
 
-## MCP adapter
+## License & contributions
 
-**Planned.** The MCP adapter is deliberately out of wave 1 (tool-result shaping by
-the host's aligned model would reintroduce a second censorship layer); the HTTP
-core is the primary interface. **If you need MCP, open an issue — it's a thin
-wrapper around the core and will be prioritized on request.**
+Code: [Apache-2.0](LICENSE). Use: **lawful use only** per [AUP.md](AUP.md).
+Issues welcome — especially calibration items (frictional-but-lawful topics that
+misroute either way) and backend recipes for GPUs we haven't measured.
