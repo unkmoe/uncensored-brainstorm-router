@@ -32,9 +32,7 @@ The default setup this README assumes:
   this README's scope.
 - **Node.js 20+** — runs the extension and the bundled tooling (`npm install`).
 - **RunPod account (prepaid)** — hosts the uncensored backend. Create an API key
-  in the console (Settings → API Keys) with serverless management, billing read,
-  and **AI API access granted per endpoint in the console** (no REST way to grant
-  it — see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)).
+  in the console (Settings → API Keys) with serverless management and billing read.
 - **OpenCode account with prepaid credits** — powers the default judge
   (`jev-1.13`). The free judge variant requires a training
   opt-in and is not recommended ([docs/JUDGE.md](docs/JUDGE.md)).
