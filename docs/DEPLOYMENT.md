@@ -163,7 +163,8 @@ the Qwen backend can emit a populated array with `finish_reason: stop` under for
 
 ## Using the core from pi (`models.json`)
 
-With the core running on `localhost:8787`:
+With the core running on `localhost:8787` (start it with `npm run core`; see
+`src/core/server.ts` for env bindings — `CORE_PORT`/`CORE_HOST`/`CORE_API_KEY`):
 
 ```json
 {
