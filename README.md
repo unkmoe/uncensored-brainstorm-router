@@ -17,6 +17,27 @@ judge — one classify call per turn
     └─ otherwise       ──►  your normal session model
 ```
 
+## Prerequisites
+
+The default setup this README assumes:
+
+- **pi** — this package is a pi extension (`pi -e …`). Other clients are outside
+  this README's scope.
+- **Node.js 20+** — runs the extension and the bundled tooling (`npm install`).
+- **RunPod account (prepaid)** — hosts the uncensored backend. Your API key needs
+  serverless management, billing read, and **AI API access granted per endpoint in
+  the console** (no REST way to grant it — see
+  [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)).
+- **OpenCode account with prepaid credits** — powers the default judge
+  (`jev-1.13`, ~$0.00002/turn). The free judge variant requires a training
+  opt-in and is not recommended ([docs/JUDGE.md](docs/JUDGE.md)).
+- **An OpenAI-compatible uncensored endpoint** on RunPod serverless — default
+  recipe: Qwen2.5-32B-Instruct-abliterated fp8 × A40 (copy-paste JSON in
+  [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)).
+
+Non-default judge alternatives (fully local CPU judge, logprob fallback) are
+documented in [docs/JUDGE.md](docs/JUDGE.md).
+
 ## Quick start
 
 ```bash
