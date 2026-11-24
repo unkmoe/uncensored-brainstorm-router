@@ -83,11 +83,16 @@ To make it permanent, copy `pi-extensions/brainstorm-router.ts` to
 
 ## FAQ
 
-**Cost per session?** ~$0.6 / 30 min warm ($1.22/hr, scale-to-zero, $0 idle) plus
-~$0.00002/turn for the judge (or $0 with the local judge).
+**What does it cost?** The backend bills per second of worker uptime on RunPod
+(~$1.22/hr on the default recipe; $0 while idle — scale-to-zero), so a warm
+30-minute session runs about $0.6. The judge adds ~$0.00002 per turn on Jev, or
+nothing with the local judge. Budget caps and monitoring:
+[docs/GOVERNOR.md](docs/GOVERNOR.md).
 
-**Judge offline?** The router falls back to a logprob judge on your own endpoint.
-AUP stays usable there; friction detection does not — [docs/JUDGE.md](docs/JUDGE.md).
+**What if the judge is unavailable?** The router falls back to a logprob judge on
+your own backend: AUP refusals keep working, automatic friction escalation does
+not (an explicit `uncensored:` still forces the route). A fully local CPU judge
+is also available — [docs/JUDGE.md](docs/JUDGE.md).
 
 ## Documentation
 
