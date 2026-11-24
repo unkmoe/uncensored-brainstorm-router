@@ -15,8 +15,8 @@ export const FRICTION_THRESHOLD = 0.2;
  * RunPod OpenAI-compatible endpoint (main axis). Switched to Qwen2.5-32B-abliterated
  * (Leader decision 2026-11-24): tool_call 10/10 vs Dolphin-24B 0/5, same $1.22/hr (p3-qwen-tools.md).
  */
-export const UNC_BASE =
-	process.env.RUNPOD_OPENAI_BASE ?? "https://api.runpod.ai/v2/YOUR_ENDPOINT_ID/openai/v1";
+// No endpoint is bundled: RUNPOD_OPENAI_BASE is required (server fails fast when unset).
+export const UNC_BASE = process.env.RUNPOD_OPENAI_BASE ?? "";
 export const UNC_MODEL =
 	process.env.RUNPOD_UNCENSORED_MODEL ?? "huihui-ai/Qwen2.5-32B-Instruct-abliterated";
 

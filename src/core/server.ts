@@ -305,6 +305,14 @@ async function main(): Promise<void> {
 	log(`thresholds: aup>=${AUP_THRESHOLD} refuse; friction>=${FRICTION_THRESHOLD} -> uncensored route`);
 	await checkBalance();
 
+	if (!UNC_BASE) {
+		console.error(
+			"[core] RUNPOD_OPENAI_BASE is required (https://api.runpod.ai/v2/<your-endpoint-id>/openai/v1). " +
+				"No endpoint is bundled in this repo. Exiting.",
+		);
+		process.exit(1);
+	}
+
 	const server = http.createServer((req, res) => {
 		void (async () => {
 			try {

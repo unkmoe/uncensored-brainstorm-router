@@ -68,9 +68,10 @@ export RUNPOD_UNCENSORED_MODEL=huihui-ai/Qwen2.5-32B-Instruct-abliterated
 pi -e ./pi-extensions/brainstorm-router.ts --model router/brainstorm
 ```
 
-> Unset, `RUNPOD_OPENAI_BASE` falls back to the repo's bundled default endpoint —
-> set your own before real use. With no backend at all, the AUP gate still runs
-> (fail-closed); only the uncensored route is unavailable.
+> `RUNPOD_OPENAI_BASE` is **required** — no endpoint is bundled in this repo, and
+> the router and the core fail fast with a clear message when it is unset. If your
+> backend is unreachable later, the AUP gate still runs judge-side; only the
+> uncensored route is unavailable.
 
 Then just talk. No tag is required — the judge escalates frictional-but-lawful
 topics on its own. Prefix a message with `uncensored:` to force the uncensored

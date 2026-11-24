@@ -22,7 +22,11 @@ import type { ExtensionAPI, ModelRouteRequest } from "@earendil-works/pi-coding-
 
 const RESULTS_PATH = new URL("./judge-probe-results.json", import.meta.url).pathname;
 
-const UNC_BASE = process.env.RUNPOD_OPENAI_BASE ?? "https://api.runpod.ai/v2/YOUR_ENDPOINT_ID/openai/v1";
+const UNC_BASE = process.env.RUNPOD_OPENAI_BASE ?? "";
+if (!UNC_BASE)
+	throw new Error(
+		"judge-probe: set RUNPOD_OPENAI_BASE (https://api.runpod.ai/v2/<your-endpoint-id>/openai/v1). No endpoint is bundled.",
+	);
 const UNC_MODEL = process.env.RUNPOD_UNCENSORED_MODEL ?? "huihui-ai/Qwen2.5-7B-Instruct-abliterated-v2";
 
 /** Softmax over candidate label tokens taken from the top-logprobs of the first sampled token. */

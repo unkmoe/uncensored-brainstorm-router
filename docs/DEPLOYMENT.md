@@ -148,7 +148,7 @@ the Qwen backend can emit a populated array with `finish_reason: stop` under for
 | Variable | Where | Default | Purpose |
 | --- | --- | --- | --- |
 | `RUNPOD_API_KEY` | everywhere | — | RunPod key (management + AI API) |
-| `RUNPOD_OPENAI_BASE` | core, extension | `…/v2/<default-32B-endpoint>/openai/v1` | Your backend's OpenAI-compatible base |
+| `RUNPOD_OPENAI_BASE` | core, extension | *(required — none bundled; fail-fast when unset)* | Your backend's OpenAI-compatible base |
 | `RUNPOD_UNCENSORED_MODEL` | core, extension | `huihui-ai/Qwen2.5-32B-Instruct-abliterated` | Model id to force server-side |
 | `CORE_PORT` / `CORE_HOST` | core | `8787` / `127.0.0.1` | HTTP core bind |
 | `CORE_API_KEY` | core | unset | If set, clients must send this Bearer |
@@ -157,9 +157,10 @@ the Qwen backend can emit a populated array with `finish_reason: stop` under for
 | `JEV_BASE_URL` / `JEV_MODEL` / `JEV_TIMEOUT_MS` | core | System One defaults | Judge endpoint override (e.g. local llama.cpp) |
 | `OPENCODE_API_KEY` | judge | env | Jev via the opencode provider |
 
-> The checked-in defaults in `pi-extensions/brainstorm-router.ts` and
-> `src/core/config.ts` still point at the author's own endpoints — always set
-> `RUNPOD_OPENAI_BASE`/`RUNPOD_UNCENSORED_MODEL` for your deployment.
+> No endpoint is bundled: unset `RUNPOD_OPENAI_BASE` fails fast with a clear
+> error at startup. `RUNPOD_UNCENSORED_MODEL` still defaults to the
+> Qwen-32B-abliterated model id, so setting the base URL is the only required
+> step.
 
 ## Using the core from pi (`models.json`)
 

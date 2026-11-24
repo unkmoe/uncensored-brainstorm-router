@@ -19,7 +19,11 @@ import yaml from "js-yaml";
 const HERE = dirname(fileURLToPath(import.meta.url));
 
 // --- production config mirrors (same defaults as brainstorm-router.ts) ---
-const BASE = process.env.RUNPOD_OPENAI_BASE ?? "https://api.runpod.ai/v2/YOUR_ENDPOINT_ID/openai/v1";
+const BASE = process.env.RUNPOD_OPENAI_BASE ?? "";
+if (!BASE)
+	throw new Error(
+		"calibration harness: set RUNPOD_OPENAI_BASE (https://api.runpod.ai/v2/<your-endpoint-id>/openai/v1). No endpoint is bundled.",
+	);
 const MODEL = process.env.RUNPOD_UNCENSORED_MODEL ?? "huihui-ai/Qwen2.5-7B-Instruct-abliterated-v2";
 const CONCURRENCY = 2; // production judge also runs its 2 questions in parallel
 

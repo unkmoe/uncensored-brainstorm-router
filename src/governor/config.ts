@@ -14,7 +14,7 @@
  *   "stateFile": "governor-state.json",
  *   "defaultLimits": { "sessionUsd": 2, "dayUsd": 10, "monthUsd": 50 },
  *   "endpoints": [
- *     { "id": "YOUR_ENDPOINT_ID", "name": "phase1-qwen25-7b", "limits": { "sessionUsd": 1 } }
+ *     { "id": "<endpointId>", "name": "your-endpoint", "limits": { "sessionUsd": 1 } }
  *   ]
  * }
  *

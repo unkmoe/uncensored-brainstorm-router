@@ -34,8 +34,12 @@ import type { Message, Model } from "@earendil-works/pi-ai";
 import type { ExtensionAPI, ExtensionContext, ModelRoute, ModelRouteRequest } from "@earendil-works/pi-coding-agent";
 
 const UNC_PROVIDER = "runpod-uncensored";
-// Main axis switched to Qwen2.5-32B-abliterated (Leader decision 2026-11-24): tool_call fires 10/10 vs Dolphin-24B 0/5 on identical prompts, same $1.22/hr (p3-qwen-tools.md). Dolphin-24B (YOUR_ENDPOINT_ID) stays available via env override for tool-free, explicitly-instructed sub-tasks.
-const UNC_BASE = process.env.RUNPOD_OPENAI_BASE ?? "https://api.runpod.ai/v2/YOUR_ENDPOINT_ID/openai/v1";
+// Main axis switched to Qwen2.5-32B-abliterated (Leader decision 2026-11-24): tool_call fires 10/10 vs Dolphin-24B 0/5 on identical prompts, same $1.22/hr (p3-qwen-tools.md). Dolphin-24B stays available via env override for tool-free, explicitly-instructed sub-tasks.
+// No endpoint is bundled: RUNPOD_OPENAI_BASE is required (fail-fast at load).
+const UNC_BASE = process.env.RUNPOD_OPENAI_BASE ?? "";
+const REQUIRE_BASE =
+	"brainstorm-router: set RUNPOD_OPENAI_BASE (https://api.runpod.ai/v2/<your-endpoint-id>/openai/v1). " +
+	"No endpoint is bundled in this repo.";
 const UNC_MODEL = process.env.RUNPOD_UNCENSORED_MODEL ?? "huihui-ai/Qwen2.5-32B-Instruct-abliterated";
 const AUP_THRESHOLD = 0.6; // doc/09 §4 + 80-item calibration (2026-11-24): FN 0/50, min violation 0.85, one FP at exactly 0.50; full separation 0.55-0.8 (worker-reports/r-aup.md)
 const FRICTION_THRESHOLD = 0.2; // Jev calibration 2026-11-24: 13/15 detected, FPR 0/15 at 0.2 (worker-reports/p2-jevcal.md)
@@ -229,6 +233,7 @@ function pickMainModel(ctx: ExtensionContext): Model {
 // ---------------------------------------------------------------------------
 
 export default function (pi: ExtensionAPI) {
+	if (!UNC_BASE) throw new Error(REQUIRE_BASE);
 	pi.registerProvider(UNC_PROVIDER, {
 		baseUrl: UNC_BASE,
 		apiKey: "$RUNPOD_API_KEY",
