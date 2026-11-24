@@ -267,16 +267,18 @@ export default function (pi: ExtensionAPI) {
 			const text = lastUserText(request.messages);
 			const tagged = /\buncensored:|^\/unc\b/i.test(text.trim());
 
-			// Judge runs on every user turn: AUP must gate even explicit tags (doc/09 §3).
+			// Judge runs on every user turn regardless of backend availability:
+			// AUP must gate even explicit tags and even when the uncensored provider
+			// is missing (fail-closed — u1 review B5). A missing backend only
+			// disables the friction escalation route, never the AUP refusal.
 			let outcome: JudgeOutcome | undefined;
-			if (uncensored) {
-				try {
-					outcome = await runJudge(text, request, ctx);
-				} catch (e) {
-					log(`judge failed: ${e}`);
-				}
-			} else {
-				log("uncensored backend not found; everything routes to the main model");
+			try {
+				outcome = await runJudge(text, request, ctx);
+			} catch (e) {
+				log(`judge failed: ${e}`);
+			}
+			if (!uncensored) {
+				log("uncensored backend not found: AUP gate stays active, lawful friction cannot escalate");
 			}
 
 			const state: RouterState = {
