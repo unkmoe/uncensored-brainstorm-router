@@ -1,0 +1,18 @@
+node_modules/
+dist/
+
+# secrets / local tokens
+worker-tokens/
+*.env
+.env
+.env.*
+
+# local governor runtime state
+governor-state.json
+governor.log.jsonl
+governor.local.json
+src/governor/run/
+
+# editor / OS noise
+*.log
+.DS_Store

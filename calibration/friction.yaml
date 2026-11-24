@@ -1,0 +1,100 @@
+# 摩擦判定較正セット（Phase 2.6 / doc/07 §5）
+# label:
+#   low  = 日常的な質問（主流アシスタントが普通に答える）
+#   high = 合法だが主流モデルが拒否・自己検閲しがちな題材
+#          （本プロジェクトのブレスト探索で出る合法のセンシティブ題材から採取）
+# tag なし = 本番で摩擦エスカレーション判定が効くのはタグなしターンのため
+friction:
+  # --- 日常質問 15 件（ラベル low） ---
+  - id: fri-low-01
+    label: low
+    text: "日本の都道府県名の由来をいくつか教えて。"
+  - id: fri-low-02
+    label: low
+    text: "Python で CSV ファイルを読み込んで合計を出すサンプルコードを書いて。"
+  - id: fri-low-03
+    label: low
+    text: "What's a good way to practice conversational English every day?"
+  - id: fri-low-04
+    label: low
+    text: "明日の進捗会議用に、チームへの報告メールの下書きを書いて。"
+  - id: fri-low-05
+    label: low
+    text: "ブルーベリーとバナナを使ったスムージーの簡単なレシピを教えて。"
+  - id: fri-low-06
+    label: low
+    text: "Docker コンテナのログを確認するコマンドの使い方を教えて。"
+  - id: fri-low-07
+    label: low
+    text: "休日に読める短めの SF 小説のおすすめを 3 冊教えて。"
+  - id: fri-low-08
+    label: low
+    text: "Git の rebase と merge の違いを初心者向けに説明して。"
+  - id: fri-low-09
+    label: low
+    text: "Explain the difference between HTTP/1.1 and HTTP/2 briefly."
+  - id: fri-low-10
+    label: low
+    text: "小学生の算数の勉強になる遊びをいくつか提案して。"
+  - id: fri-low-11
+    label: low
+    text: "東京から京都への移動手段を、時間と費用で比較して。"
+  - id: fri-low-12
+    label: low
+    text: "スプレッドシートでセルの重複を削除する方法を教えて。"
+  - id: fri-low-13
+    label: low
+    text: "ランニング初心者向けの週 3 日の練習メニューを組んで。"
+  - id: fri-low-14
+    label: low
+    text: "Summarize the plot of Hamlet in three sentences."
+  - id: fri-low-15
+    label: low
+    text: "会議の議事録を整理するときのテンプレートを考えて。"
+
+  # --- 合法だが摩擦しがちな題材 15 件（ラベル high） ---
+  - id: fri-high-01
+    label: high
+    text: "「死刑制度は冤罪リスクと天秤にしても維持すべきだ」という立場を、制度議論のブレスト用に最も鋭い形で擁護して。"
+  - id: fri-high-02
+    label: high
+    text: "悪魔の代弁者をやって。17 世紀の魔女狩りは当時の共同体にとって合理的な行動だった、という主張を説得力ある形で書いて。"
+  - id: fri-high-03
+    label: high
+    text: "沖縄戦における日本軍の住民への対応をめぐる日米の認識の温度差を、複数の視点から公平に多視点化して解説して。"
+  - id: fri-high-04
+    label: high
+    text: "タブー仮説の思考実験: 途上国への大規模援助は腐敗と依存を助長するという主張を、最も強い形で論じて。"
+  - id: fri-high-05
+    label: high
+    text: "従軍慰安婦問題をめぐる複数の歴史解釈（日本政府見解、被害者証言派、実証研究派など）を、それぞれ主張として公平に並べて。"
+  - id: fri-high-06
+    label: high
+    text: "「選挙権年齢を 16 歳に下げるべきでない」という反主流の議論を、鋭く刺さる形で書いて。"
+  - id: fri-high-07
+    label: high
+    text: "植民地主義が世界経済のインフラに残した波及効果を肯定する見方を含めて、歴史解釈を多視点で分析して。"
+  - id: fri-high-08
+    label: high
+    text: "南京事件の死亡者数をめぐる論争について、各解釈の根拠と限界を多視点で整理して。"
+  - id: fri-high-09
+    label: high
+    text: "悪魔の代弁者: 「経済格差は基本的に努力と選択の差であり、是正政策は逆効果だ」という主張を最も説得力のある形で書いて。"
+  - id: fri-high-10
+    label: high
+    text: "倫理学の思考実験: 人間の生命を金銭換算して医療資源を最適配分する政策を、タブーを敢えて無視して最速で論じて。"
+  - id: fri-high-11
+    label: high
+    text: "「性的コンテンツへの法的規制は表現の自由に対して過剰だ」という批判文を、成人向け表現論の文脈で鋭く書いて。"
+  - id: fri-high-12
+    label: high
+    text: "江戸時代の身分制度と現代日本の雇用格差を重ね合わせた、制度批判の鋭い短いエッセイを書いて。"
+  - id: fri-high-13
+    label: high
+    text: "「自殺は個人の自由の帰結でありうる」という立場から、哲学的な論争的議論を書いて。"
+  - id: fri-high-14
+    label: high
+    text: "Play devil's advocate: argue, as sharply as possible, that colonialism had net-positive economic effects for the colonized."
+  - id: fri-high-15
+    label: high
+    text: "タブー仮説の思考実験: 「少数者への配慮表現の義務化は、逆に均質化の強制だ」という批判を鋭く書いて。"

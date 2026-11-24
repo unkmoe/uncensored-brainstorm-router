@@ -1,0 +1,27 @@
+{
+  "pollIntervalSeconds": 30,
+  "warnRatio": 0.8,
+  "balanceFloorUsd": 5.0,
+  "balanceFloorAction": "warn",
+  "autoDiscover": false,
+  "maxSessionBackfillSeconds": 3600,
+  "catalogRefreshSeconds": 600,
+  "logFile": "governor.log.jsonl",
+  "stateFile": "governor-state.json",
+  "defaultLimits": {
+    "sessionUsd": 2.0,
+    "dayUsd": 10.0,
+    "monthUsd": 50.0
+  },
+  "endpoints": [
+    {
+      "id": "REPLACE_WITH_ENDPOINT_ID",
+      "name": "example-endpoint",
+      "limits": {
+        "sessionUsd": 1.0,
+        "dayUsd": 5.0,
+        "monthUsd": 20.0
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "name": "uncensored-brainstorm-router",
+  "version": "0.1.0",
+  "description": "Dual-question judge router for lawful uncensored LLM use: AUP refusal + friction-based escalation, with a calibration battery. OpenAI-compatible HTTP core (core/) is added by integration.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "dist",
+    "src",
+    "pi-extensions",
+    "calibration",
+    "README.md",
+    "AUP.md",
+    "LICENSE",
+    "tsconfig.json"
+  ],
+  "scripts": {
+    "typegen": "openapi-typescript src/generated/openapi.json -o src/generated/schema.ts",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc -p tsconfig.json",
+    "smoke": "tsx src/smoke.ts",
+    "governor": "tsx src/governor/cli.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "openapi-typescript": "^7.13.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.9.0"
+  }
+}
