@@ -173,5 +173,5 @@ With the core running on `localhost:8787`:
 ```
 
 Then `pi --model brainstorm-core/brainstorm …` — no extension needed; the judge and
-AUP gate run inside the core. Other OpenAI-compatible clients (Cursor custom model,
-Open WebUI, claude-code-router) point at the same URL.
+AUP gate run inside the core. Other OpenAI-compatible clients point at the same URL,
+but are not yet verified (see README Limitations).

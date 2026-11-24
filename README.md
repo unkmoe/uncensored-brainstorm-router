@@ -5,8 +5,9 @@
 A dual-question judge classifies every user turn and routes it in three ways: to a
 mainstream model (mundane turns), to an uncensored RunPod backend (lawful turns that
 mainstream assistants would refuse or dilute), or to a **hard refusal with no model
-called at all** (illegal categories). Exposes an ordinary OpenAI-compatible API, so
-any agent layer — pi, Cursor, Open WebUI, claude-code-router — can use it as a model.
+called at all** (illegal categories). Built for **pi** (extension and HTTP-core
+integration); the core is a standard OpenAI-compatible endpoint, so other OpenAI
+clients *can* connect — but only pi is tested (see Limitations).
 
 ```
 Judge (Jev, one call/turn, ~250 ms) ─┬─ AUP ≥ 0.6      → REFUSE (no model billed)
@@ -58,7 +59,7 @@ npm install
 export RUNPOD_API_KEY=rpa_…            # RunPod key (see Setup)
 npm run smoke                           # balance, catalog, endpoints — read-only check
 
-# Option A — HTTP core (any OpenAI client):
+# Option A — HTTP core (pi via models.json, or any OpenAI client — see Limitations):
 npm run core &                         # → http://localhost:8787/v1
 curl http://localhost:8787/v1/chat/completions -H 'content-type: application/json' -d '{
   "model":"brainstorm","messages":[{"role":"user","content":"uncensored: 遠慮のない意見を"}]}'
@@ -171,6 +172,10 @@ with session-state caching and sticky routing for prompt-cache friendliness.
 
 ## Limitations
 
+- **Only pi is a verified client.** The pi extension is tested end to end; the HTTP
+  core is tested with direct requests. Cursor / Open WebUI / claude-code-router are
+  *architecturally* supported (standard OpenAI-compatible API) but not yet exercised —
+  connect-and-report if you try them.
 - **Tool calls are backend-dependent.** Default Qwen-32B-abliterated fires reliably
   (10/10 on weak instructions); Dolphin-24B fired 0/5 even on explicit instructions
   in follow-up batteries — chat-only, do not route tools to it.
