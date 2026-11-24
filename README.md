@@ -40,38 +40,28 @@ documented in [docs/JUDGE.md](docs/JUDGE.md).
 
 ## Quick start
 
+With the Prerequisites in hand:
+
 ```bash
 git clone <repo-url> && cd uncensored-brainstorm-router && npm install
 
-export RUNPOD_API_KEY=rpa_…          # RunPod key (see Setup)
-export OPENCODE_API_KEY=…             # default judge (Jev) — needs OpenCode prepaid credits
+export RUNPOD_API_KEY=rpa_…        # Prerequisites: RunPod
+export OPENCODE_API_KEY=…          # Prerequisites: judge (Jev)
 export RUNPOD_OPENAI_BASE=https://api.runpod.ai/v2/<endpoint-id>/openai/v1
 export RUNPOD_UNCENSORED_MODEL=huihui-ai/Qwen2.5-32B-Instruct-abliterated
 
 pi -e ./pi-extensions/brainstorm-router.ts --model router/brainstorm
 ```
 
-Then just talk. A mundane question stays on your normal model; a message starting
-with `uncensored:` goes straight to the uncensored backend; a frictional-but-lawful
-topic gets there automatically via the judge; illegal categories are refused. Every
-decision (probabilities, latency, route) is logged to stderr — never your API keys.
+Then just talk. No tag is required — the judge escalates frictional-but-lawful
+topics on its own. Prefix a message with `uncensored:` to force the uncensored
+route (the AUP check still applies); illegal categories are refused outright.
+Every decision — probabilities, latency, route — is logged to stderr, never your
+API keys.
 
-Make it permanent: copy `pi-extensions/brainstorm-router.ts` to
-`~/.pi/agent/extensions/brainstorm-router/index.ts`, then pick
-`router/brainstorm` with `/model` in any session.
-
-## Setup
-
-1. **RunPod key** — console → API Keys. Needs serverless management, billing read,
-   and **AI API access granted per endpoint in the console** (the #1 pitfall — see
-   [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)).
-2. **Judge** — default is Jev via OpenCode credits (paid `jev-1.13`, no training on
-   your data, ~$0.00002/judgment). Fully local CPU judge also verified
-   ([docs/JUDGE.md](docs/JUDGE.md)). Without either, a logprob fallback on your own
-   endpoint runs — weaker on friction detection, honestly documented.
-3. **Backend** — one RunPod serverless vLLM endpoint. Copy-paste recipe for the
-   default (Qwen2.5-32B-abliterated fp8 × A40, tool-call capable, scale-to-zero):
-   [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+To make it permanent, copy `pi-extensions/brainstorm-router.ts` to
+`~/.pi/agent/extensions/brainstorm-router/index.ts`; the router then appears as
+`router/brainstorm` in `/model` for every session.
 
 ## Commands
 
