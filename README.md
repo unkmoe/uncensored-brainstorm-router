@@ -85,7 +85,7 @@ To make it permanent, copy `pi-extensions/brainstorm-router.ts` to
   parser recipes: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 - The judge's thresholds are calibrated on our topics — re-calibrate for yours
   with the bundled harness: [docs/CALIBRATION.md](docs/CALIBRATION.md).
-- **The AUP threshold is fixed by spec** — not a configuration option
+- The AUP threshold is fixed by spec — not a configuration option
   ([AUP.md](AUP.md)).
 
 ## FAQ
