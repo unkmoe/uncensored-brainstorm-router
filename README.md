@@ -17,7 +17,12 @@ judge — one classify call per turn
     └─ otherwise       ──►  your normal session model
 ```
 
-## Prerequisites
+- **AUP ≥ 0.6** — the judge's probability that the request belongs to an illegal
+  content category. Fixed by spec ([AUP.md](AUP.md)); above it, no model is called
+  and no GPU time is billed.
+- **friction ≥ 0.2** — the judge's probability that a mainstream assistant would
+  refuse or dilute this request. Above it, the turn is served by the uncensored
+  backend instead.
 
 The default setup this README assumes:
 
