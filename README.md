@@ -24,7 +24,7 @@ All numbers are from a 55-item calibration battery (`calibration/`, raw results 
 | Judge latency | **p50 253 ms** (max 663 ms) per user turn |
 | Judge cost | ~$0.00002 per judgment (~512 tokens); 1,000 turns ≈ $0.02 |
 | Session cost | **~$0.6 per 30-min brainstorm session** (warm) |
-| Backend | Dolphin-Mistral-24B-Venice fp8 × A40 serverless, **$1.22/hr**, FlashBoot warm-up 2.9–4.7 s |
+| Backend | **Qwen2.5-32B-Instruct-abliterated fp8 × A40 serverless (default), $1.22/hr**, FlashBoot revival ~51 s, tool_call capable. Dolphin-Mistral-24B-Venice fp8 is the alternative backend (same price, ~23 tok/s, **not recommended for tool use** — needs explicit forcing instructions) |
 
 Two question types share one classify call per user turn:
 
@@ -121,14 +121,19 @@ vLLM endpoint (`BRAINSTORM_JUDGE=vllm|jev|auto`, default `auto`).
 
 ### 3. Deploy the uncensored backend
 
-Any OpenAI-compatible serverless vLLM endpoint works. The measured setup is
-Dolphin-Mistral-24B-Venice-Edition fp8 on A40 ($1.22/hr, FlashBoot ON,
-scale-to-zero — idle cost $0). Point the extension at it:
+Any OpenAI-compatible serverless vLLM endpoint works. The measured default setup is
+**Qwen2.5-32B-Instruct-abliterated fp8 on A40** ($1.22/hr, `TOOL_CALL_PARSER=hermes`,
+`ENABLE_AUTO_TOOL_CHOICE=true`, FlashBoot ON, scale-to-zero — idle cost $0).
+**Container disk must be 100GB** (the 65.5GB bf16 download exceeds the 50GB default).
+Dolphin-Mistral-24B-Venice fp8 works as an alternative backend (same price, ~23 tok/s),
+but is **not recommended for tool use**: it fires tool calls 0/5 on ambiguous
+instructions and needs explicit "you must call the tool" forcing.
+Point the extension at it:
 
 ```bash
 export RUNPOD_API_KEY=rpa_…                          # your key
 export RUNPOD_OPENAI_BASE=https://api.runpod.ai/v2/<endpoint-id>/openai/v1
-export RUNPOD_UNCENSORED_MODEL=dphn/Dolphin-Mistral-24B-Venice-Edition
+export RUNPOD_UNCENSORED_MODEL=huihui-ai/Qwen2.5-32B-Instruct-abliterated
 export OPENCODE_API_KEY=…                            # optional; enables the Jev judge
 ```
 

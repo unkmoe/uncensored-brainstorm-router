@@ -34,8 +34,9 @@ import type { Message, Model } from "@earendil-works/pi-ai";
 import type { ExtensionAPI, ExtensionContext, ModelRoute, ModelRouteRequest } from "@earendil-works/pi-coding-agent";
 
 const UNC_PROVIDER = "runpod-uncensored";
-const UNC_BASE = process.env.RUNPOD_OPENAI_BASE ?? "https://api.runpod.ai/v2/YOUR_ENDPOINT_ID/openai/v1"; // 24B main axis (p2-24b.md); 7B YOUR_ENDPOINT_ID available via env override
-const UNC_MODEL = process.env.RUNPOD_UNCENSORED_MODEL ?? "dphn/Dolphin-Mistral-24B-Venice-Edition";
+// Main axis switched to Qwen2.5-32B-abliterated (Leader decision 2026-11-24): tool_call fires 10/10 vs Dolphin-24B 0/5 on identical prompts, same $1.22/hr (p3-qwen-tools.md). Dolphin-24B (YOUR_ENDPOINT_ID) stays available via env override for tool-free, explicitly-instructed sub-tasks.
+const UNC_BASE = process.env.RUNPOD_OPENAI_BASE ?? "https://api.runpod.ai/v2/YOUR_ENDPOINT_ID/openai/v1";
+const UNC_MODEL = process.env.RUNPOD_UNCENSORED_MODEL ?? "huihui-ai/Qwen2.5-32B-Instruct-abliterated";
 const AUP_THRESHOLD = 0.5; // doc/09 §4: refuse at >= 0.5 (Jev calibration: 25/25 correct at 0.5)
 const FRICTION_THRESHOLD = 0.2; // Jev calibration 2026-11-24: 13/15 detected, FPR 0/15 at 0.2 (worker-reports/p2-jevcal.md)
 const JUDGE_MODE = (process.env.BRAINSTORM_JUDGE ?? "auto") as "jev" | "vllm" | "auto";

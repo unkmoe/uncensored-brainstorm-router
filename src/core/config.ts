@@ -11,11 +11,14 @@ export const AUP_THRESHOLD = 0.5;
 /** Jev calibration 2026-11-24: 13/15 detected, FPR 0/15 at 0.2. */
 export const FRICTION_THRESHOLD = 0.2;
 
-/** RunPod 24B OpenAI-compatible endpoint (main axis, p2-24b.md). */
+/**
+ * RunPod OpenAI-compatible endpoint (main axis). Switched to Qwen2.5-32B-abliterated
+ * (Leader decision 2026-11-24): tool_call 10/10 vs Dolphin-24B 0/5, same $1.22/hr (p3-qwen-tools.md).
+ */
 export const UNC_BASE =
 	process.env.RUNPOD_OPENAI_BASE ?? "https://api.runpod.ai/v2/YOUR_ENDPOINT_ID/openai/v1";
 export const UNC_MODEL =
-	process.env.RUNPOD_UNCENSORED_MODEL ?? "dphn/Dolphin-Mistral-24B-Venice-Edition";
+	process.env.RUNPOD_UNCENSORED_MODEL ?? "huihui-ai/Qwen2.5-32B-Instruct-abliterated";
 
 /** Server listen settings. */
 export const PORT = Number(process.env.CORE_PORT ?? 8787);
