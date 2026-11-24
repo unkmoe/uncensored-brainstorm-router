@@ -7,9 +7,14 @@ to your normal session model, to an uncensored RunPod backend, or — for illega
 categories — to a hard refusal with **no model called at all**:
 
 ```
-Judge (Jev, 1 call/turn) ─┬─ AUP ≥ 0.6       → REFUSE (no model billed)
-                           ├─ friction ≥ 0.2  → uncensored backend (32B, $1.22/hr)
-                           └─ otherwise       → your normal session model
+your message
+    │
+    ▼
+judge — one classify call per turn
+    │
+    ├─ AUP ≥ 0.6       ──►  refused — no model is called
+    ├─ friction ≥ 0.2  ──►  uncensored backend
+    └─ otherwise       ──►  your normal session model
 ```
 
 ## Quick start
