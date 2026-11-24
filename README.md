@@ -23,7 +23,7 @@ judge — one classify call per turn
 git clone <repo-url> && cd uncensored-brainstorm-router && npm install
 
 export RUNPOD_API_KEY=rpa_…          # RunPod key (see Setup)
-export OPENCODE_API_KEY=…             # optional but recommended: enables the Jev judge
+export OPENCODE_API_KEY=…             # default judge (Jev) — needs OpenCode prepaid credits
 export RUNPOD_OPENAI_BASE=https://api.runpod.ai/v2/<endpoint-id>/openai/v1
 export RUNPOD_UNCENSORED_MODEL=huihui-ai/Qwen2.5-32B-Instruct-abliterated
 
