@@ -78,9 +78,6 @@ To make it permanent, copy `pi-extensions/brainstorm-router.ts` to
 
 ## Limitations
 
-- Tool-call behavior is a property of the backend model, not of the router — the
-  default backend fires them reliably; the alternative is chat-only. Details and
-  parser recipes: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 - The judge's thresholds are calibrated on our topics — re-calibrate for yours
   with the bundled harness: [docs/CALIBRATION.md](docs/CALIBRATION.md).
 - The AUP threshold is fixed by spec — not a configuration option
