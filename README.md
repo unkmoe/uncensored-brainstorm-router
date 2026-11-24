@@ -2,17 +2,26 @@
 
 **Removes alignment friction from lawful brainstorming — while shipping an illegal-category gate in the same package.**
 
-A dual-question judge classifies every user turn and routes it in three ways: to a
-mainstream model (mundane turns), to an uncensored RunPod backend (lawful turns that
-mainstream assistants would refuse or dilute), or to a **hard refusal with no model
-called at all** (illegal categories). Built for **pi** (extension and HTTP-core
-integration); the core is a standard OpenAI-compatible endpoint, so other OpenAI
-clients *can* connect — but only pi is tested (see Limitations).
+A dual-question judge runs on every user turn. The package ships in two shapes that
+share one judge:
+
+- **pi extension** (tested end to end): routes three ways — a mainstream model for
+  mundane turns, an uncensored RunPod backend for lawful turns that mainstream
+  assistants would refuse or dilute, and a **hard refusal with no model called at
+  all** for illegal categories.
+- **OpenAI-compatible HTTP core** (tested via direct API calls): gates a single
+  uncensored backend — AUP refusals return before any GPU second is billed, and the
+  friction score rides along as response headers.
+
+pi is the only verified client; other OpenAI clients are architecture, not promises
+(see Limitations).
 
 ```
-Judge (Jev, one call/turn, ~250 ms) ─┬─ AUP ≥ 0.6      → REFUSE (no model billed)
-                                     ├─ friction ≥ 0.2 → uncensored backend (32B, $1.22/hr)
-                                     └─ otherwise      → mainstream model
+pi extension:   Judge (Jev, 1 call/turn, ~250 ms) ─┬─ AUP ≥ 0.6       → REFUSE (no model billed)
+                                                   ├─ friction ≥ 0.2  → uncensored backend (32B, $1.22/hr)
+                                                   └─ otherwise       → mainstream model
+HTTP core:      POST /v1/chat/completions ── AUP ≥ 0.6 → REFUSE · else → uncensored backend
+                                                      (friction score in X-Judge-* headers)
 ```
 
 Measured, not claimed: friction **13/15 detected, 0 false positives** · illegal-category
@@ -33,12 +42,12 @@ creates two new problems: **cost-control accidents** (idle GPU burn, runaway spe
 
 ## The solution
 
-One OpenAI-compatible endpoint with a judge in front of it. Friction is routed around
-(dolphin/abliterated backends on RunPod serverless, scale-to-zero, ~$0 idle), illegal
-categories are refused before any GPU seconds are billed, and a budget governor
-estimates spend in real time. You bring your own RunPod key; nothing leaves your
-account except judge tokens (which you can also keep on your own machine — see
-[docs/JUDGE.md](docs/JUDGE.md)).
+In pi, friction is routed around (mundane turns stay on your main model; frictional
+turns go to uncensored backends on RunPod serverless — scale-to-zero, ~$0 idle). Via
+the HTTP core, you get the same uncensored backend with the same illegal-category
+refusal in front of it. In both shapes a budget governor estimates spend in real
+time. You bring your own RunPod key; nothing leaves your account except judge tokens
+(which you can also keep on your own machine — see [docs/JUDGE.md](docs/JUDGE.md)).
 
 ## Why use this?
 
@@ -59,7 +68,8 @@ npm install
 export RUNPOD_API_KEY=rpa_…            # RunPod key (see Setup)
 npm run smoke                           # balance, catalog, endpoints — read-only check
 
-# Option A — HTTP core (pi via models.json, or any OpenAI client — see Limitations):
+# Option A — HTTP core (verified via direct requests; pi models.json is documented
+#   in docs/DEPLOYMENT.md but not yet exercised):
 npm run core &                         # → http://localhost:8787/v1
 curl http://localhost:8787/v1/chat/completions -H 'content-type: application/json' -d '{
   "model":"brainstorm","messages":[{"role":"user","content":"uncensored: 遠慮のない意見を"}]}'
@@ -136,21 +146,23 @@ Core responses carry judge telemetry as headers: `X-Judge-Route`, `X-Judge-Frict
 ## Architecture
 
 ```
-client (pi / Cursor / Open WebUI / curl)
+client (curl — verified · pi via models.json — documented · other OpenAI clients — untested)
    │  OpenAI-compatible
    ▼
 HTTP core (src/core) ── judge (src/core/jev: System One → Jev; fallback: vLLM logprobs)
    │                      │ friction choice + AUP bool, ONE classify call per user turn
    │                      ▼
    │              AUP ≥ 0.6 ───────────► REFUSE (HTTP 400, no backend call)
-   │              friction ≥ 0.2 ──────► uncensored backend (RunPod serverless vLLM)
-   │              else ────────────────► default/backend route
+   │              otherwise ───────────► uncensored backend (route label:
+   │                                     "uncensored" if tagged/friction ≥ 0.2,
+   │                                     "default" otherwise — same backend, label is telemetry)
    ▼
 RunPod REST v2 (src/client.ts, typed) ── budget governor (src/governor)
 ```
 
-pi users get the same logic as a virtual model (`pi-extensions/brainstorm-router.ts`)
-with session-state caching and sticky routing for prompt-cache friendliness.
+The pi extension (`pi-extensions/brainstorm-router.ts`) runs the identical judge and
+adds the third branch — mundane turns go to your mainstream session model — with
+session-state caching and sticky routing for prompt-cache friendliness.
 
 ## Troubleshooting (top 5)
 
