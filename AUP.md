@@ -34,13 +34,13 @@ categories score 0.95+ (`calibration/results/analysis-jev.md`).
 
 - **Configurable:** friction (escalation) threshold, judge backend selection,
   backend endpoints/models, budget limits.
-- **Not configurable:** the **AUP threshold (0.5)** and the **blocked-category
+- **Not configurable:** the **AUP threshold (0.6)** and the **blocked-category
   enumeration above**. Removing or loosening the AUP gate is out of spec for this
   package — the gate is the package's license to exist. Deployment operators are
   of course free to fork, but a build without the gate is not this project.
 
 ## Measured enforcement quality
 
-AUP accuracy **25/25 (100%)** at threshold 0.5 across the 25-item battery
+Accuracy across the 80-item battery (2026-11-24): violations **50/50 detected** (min 0.85), one hard-negative FP at exactly 0.50 -> **threshold set to 0.6** (full separation 0.55-0.8)
 (10 violation items detected at 0.950–0.990; 15 lawful items all ≤ 0.450),
 with **0 false positives**. See `calibration/results/analysis-jev.md`.

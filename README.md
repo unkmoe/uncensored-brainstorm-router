@@ -179,23 +179,32 @@ usage; they are resume-aware and budget-guarded).
 - Use: **lawful use only** — see [AUP.md](AUP.md). The illegal-category gate is part
   of the package; its threshold (0.5) is fixed by spec and not configurable.
 
-## Limitations & backend choice (updated 2026-11-24 after the Qwen-32B experiment)
+## Limitations & backend choice (updated 2026-11-24 after the Qwen-32B experiment and the residual-task wave)
 
-- **Tool calls: backend-dependent.** Measured with identical weak instructions
-  (temp 0, n≥5): **Qwen2.5-32B-Instruct-abliterated (fp8, A40, `hermes` parser) fires
-  10/10 with valid JSON tool_calls**; Dolphin-24B-Venice fires 0/5 (states intent in
-  text instead — needs explicit "you must call the tool" instructions). Both accept
-  requests *carrying* tool definitions without crashing (`ENABLE_AUTO_TOOL_CHOICE=true`).
-- **Recommended pattern for "research-then-brainstorm" with the Dolphin backend:**
-  have the *host* agent gather context with its own tools and pass the material in the
-  prompt. With the Qwen-32B backend the model can call tools itself.
-- **Implementation guidance:** detect tool calls by the `tool_calls` array, not by
-  `finish_reason` (Qwen can emit a populated array with `finish_reason: stop` under
-  forced `tool_choice`; Dolphin can leak raw JSON into content).
-- **Qwen-32B deployment notes:** fp8 ≈ 34GB fits A40 48GB, but the container disk must be
+- **Default backend: Qwen2.5-32B-Instruct-abliterated (fp8, A40, `hermes` parser).**
+  Tool calls fire reliably on weak instructions (10/10, temp 0, valid JSON).
+- **Dolphin-24B-Venice is NOT tool-capable for routing purposes**: in follow-up
+  batteries it fired **0/5 even with explicit "you must call the tool" instructions**
+  (intent-in-text only; the single firing observed earlier was a freshly-booted
+  post-PATCH worker). Treat it as a chat-only backend.
+- **Detect tool calls by the `tool_calls` array, not `finish_reason`** (Qwen can emit a
+  populated array with `finish_reason: stop` under forced `tool_choice`; Dolphin leaks
+  raw JSON into content).
+- **Cold start (32B fp8):** full ≈ 6 min (65.5GB bf16 download); with a network-volume
+  model cache ≈ 2.5 min (~61% shorter); FlashBoot revival seconds-to-minutes when the
+  snapshot is valid. **Config changes (env/mounts/flashboot) invalidate the snapshot**
+  — expect 1-2 full-cold requests after any PATCH. First requests after a cold can hit
+  a Cloudflare 504 (~570s) while the job completes server-side; retry succeeds.
+- **Qwen-32B deployment notes:** fp8 ≈ 34GB fits A40 48GB; container disk must be
   **100GB** (the 65.5GB bf16 download exceeds the 50GB default). Generation ≈ 16 tok/s
-  (~0.7× the 24B). Full cold start ≈ 184s; FlashBoot revival minutes-level.
-- **fp8 vs bf16 quality delta** is not yet quantified (no battery observed degradation).
+  (~0.7× the 24B).
+- **AUP threshold: 0.6** (80-item calibration: FN 0/50, min violation 0.85, one FP at
+  exactly 0.50; full separation 0.55-0.8). Fixed by spec; not user-configurable.
+- **Local judge option:** llama.cpp + Kev-4B (Apache-2.0) runs the same dual-question
+  battery on CPU with AUP 25/25 correct at ~1.3-2.3s per judgment, $0, zero egress —
+  a viable privacy route for AUP-side gating (friction stays on Jev; margin thin locally).
+- **fp8 vs bf16 quality delta** is not yet quantified (no battery observed degradation;
+  measuring requires an A100 80GB endpoint at $2.99/hr — deferred as low-value).
 
 ## MCP adapter
 
