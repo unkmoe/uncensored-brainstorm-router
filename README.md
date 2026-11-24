@@ -36,7 +36,7 @@ The default setup this README assumes:
   and **AI API access granted per endpoint in the console** (no REST way to grant
   it — see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)).
 - **OpenCode account with prepaid credits** — powers the default judge
-  (`jev-1.13`, ~$0.00002/turn). The free judge variant requires a training
+  (`jev-1.13`). The free judge variant requires a training
   opt-in and is not recommended ([docs/JUDGE.md](docs/JUDGE.md)).
 - **An OpenAI-compatible uncensored endpoint** on RunPod serverless — default
   recipe: Qwen2.5-32B-Instruct-abliterated fp8 × A40 (copy-paste JSON in
