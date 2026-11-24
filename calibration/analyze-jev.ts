@@ -15,7 +15,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const THRESHOLDS = [0.4, 0.5, 0.6];
+const THRESHOLDS = [0.4, 0.5, 0.6, 0.7];
 const PRICE_PER_MTOK = 0.042; // $/Mtok blended estimate
 const EXPANDED = process.argv.includes("--expanded");
 
