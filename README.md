@@ -13,10 +13,6 @@ Judge (Jev, 1 call/turn) ─┬─ AUP ≥ 0.6       → REFUSE (no model billed
                            └─ otherwise       → your normal session model
 ```
 
-Measured, not claimed: friction **13/15 detected, 0 false positives** · illegal
-categories **50/50 caught** (80-item battery) · judge **~$0.00002/turn** · warm
-session **~$0.6 / 30 min** · raw results in [docs/CALIBRATION.md](docs/CALIBRATION.md).
-
 ## Quick start
 
 ```bash
@@ -84,9 +80,6 @@ An MCP adapter is deliberately deferred (measured reasons in
 
 **Judge offline?** The router falls back to a logprob judge on your own endpoint.
 AUP stays usable there; friction detection does not — [docs/JUDGE.md](docs/JUDGE.md).
-
-**How do I trust the numbers?** Run the batteries: `calibration/` contains the test
-sets, harnesses (resume-aware, budget-guarded), and raw JSONL results.
 
 ## Documentation
 
