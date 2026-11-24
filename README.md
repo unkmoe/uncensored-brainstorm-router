@@ -24,6 +24,8 @@ judge — one classify call per turn
   refuse or dilute this request. Above it, the turn is served by the uncensored
   backend instead.
 
+## Prerequisites
+
 The default setup this README assumes:
 
 - **pi** — this package is a pi extension (`pi -e …`). Other clients are outside
