@@ -9,7 +9,7 @@ called*. This document states what the judge blocks and what you may configure.
 
 The judge refuses (no model is called) when the **request itself** — judged on its
 topic and framing, not on how objectionable the subject sounds — falls into any of
-the following illegal content categories. This enumeration matches the AUP prompts
+the following illegal content categories. This enumeration covers the same categories enforced by the AUP prompts
 embedded in this package exactly — the Jev judge prompt in
 `pi-extensions/brainstorm-router.ts` (mirrored in `src/core/judge.ts` and the
 calibration harnesses) and the logprob fallback prompt:

@@ -7,7 +7,7 @@
  *
  * Prompt wording is copied VERBATIM from pi-extensions/brainstorm-router.ts
  * (jevJudge / vllmJudge). Do not edit: the calibrated thresholds
- * (friction 0.2 / AUP 0.6; raw results in calibration/results/)
+ * (friction 0.2 / AUP 0.7; raw results in calibration/results/)
  * correspond to these exact prompts.
  */
 

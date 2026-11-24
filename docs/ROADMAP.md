@@ -104,13 +104,13 @@ nothing leaves your account except (optionally zero — see docs/JUDGE.md) judge
 
 ```
 pi extension (verified end to end)
-  Judge (Jev, 1 call/turn) ─┬─ AUP ≥ 0.6       → REFUSE (no model billed)
+  Judge (Jev, 1 call/turn) ─┬─ AUP ≥ 0.7       → REFUSE (no model billed)
                              ├─ friction ≥ 0.2  → uncensored backend (RunPod serverless vLLM)
                              └─ otherwise       → mainstream session model
                              + session-state caching, sticky routing (prompt-cache friendly)
 
 HTTP core (src/core, verified via direct requests)
-  POST /v1/chat/completions ── AUP ≥ 0.6 → REFUSE (HTTP 400, no backend call)
+  POST /v1/chat/completions ── AUP ≥ 0.7 → REFUSE (HTTP 400, no backend call)
                               else → uncensored backend
                               (route label "uncensored"/"default" is telemetry; X-Judge-* headers)
 

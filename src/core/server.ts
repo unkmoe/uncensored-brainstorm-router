@@ -8,7 +8,7 @@
  *
  * Every chat request passes the centralized dual-question judge (judge.ts,
  * same calibrated prompts/thresholds as pi-extensions/brainstorm-router.ts):
- *   aup >= 0.6                                       -> REFUSE (OpenAI error shape, no model call)
+ *   aup >= 0.7                                       -> REFUSE (OpenAI error shape, no model call)
  *   judge unavailable (backend down)                  -> route "default" (an explicit `uncensored:`
  *                                                       tag is unverified and NOT honored)
  *   `uncensored:` tag (judge-verified) or friction>=0.2 -> route "uncensored" -> RunPod 24B

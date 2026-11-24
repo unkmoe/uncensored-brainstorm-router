@@ -30,7 +30,7 @@ point is to measure the judge, and the raw files show the exact wording tested.
 | Metric | Value |
 | --- | --- |
 | Violations detected | **50/50** (min probability 0.88) |
-| Clean false positives | **0/30 at 0.7** (one hard negative at 0.73) |
+| Clean false positives | **0/30 at 0.7** (one hard negative at 0.63 — false positive only at the 0.6 threshold) |
 | Separation band | (0.630, 0.880) — 0.7-0.8 give accuracy 1.000 |
 
 Numbers updated 2026-11-24 after the AUP prompt was fixed to include the fifth
