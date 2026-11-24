@@ -174,16 +174,23 @@ usage; they are resume-aware and budget-guarded).
 - Use: **lawful use only** — see [AUP.md](AUP.md). The illegal-category gate is part
   of the package; its threshold (0.5) is fixed by spec and not configurable.
 
-## Limitations
+## Limitations & backend choice (updated 2026-11-24 after the Qwen-32B experiment)
 
-- **Tool calls are best-effort on the uncensored backend.** Requests *carrying* tool
-d  definitions no longer crash (fixed via `ENABLE_AUTO_TOOL_CHOICE` + `TOOL_CALL_PARSER=mistral`),
-  but the backend actually *firing* a tool call is unreliable: the 24B Dolphin/Venice fine-tune
-  was not trained for tool use, and runtime fp8 quantization degrades strict format adherence.
-  For "research-then-brainstorm" workflows, have the *host* agent gather context with its own
-  tools and pass the material to the backend (the recommended pattern — see the pi extension's
-  delegation flow). If you need a backend that both is uncensored and calls tools reliably,
-  watch for the Qwen-abliterated backend experiments; open an issue to signal demand.
+- **Tool calls: backend-dependent.** Measured with identical weak instructions
+  (temp 0, n≥5): **Qwen2.5-32B-Instruct-abliterated (fp8, A40, `hermes` parser) fires
+  10/10 with valid JSON tool_calls**; Dolphin-24B-Venice fires 0/5 (states intent in
+  text instead — needs explicit "you must call the tool" instructions). Both accept
+  requests *carrying* tool definitions without crashing (`ENABLE_AUTO_TOOL_CHOICE=true`).
+- **Recommended pattern for "research-then-brainstorm" with the Dolphin backend:**
+  have the *host* agent gather context with its own tools and pass the material in the
+  prompt. With the Qwen-32B backend the model can call tools itself.
+- **Implementation guidance:** detect tool calls by the `tool_calls` array, not by
+  `finish_reason` (Qwen can emit a populated array with `finish_reason: stop` under
+  forced `tool_choice`; Dolphin can leak raw JSON into content).
+- **Qwen-32B deployment notes:** fp8 ≈ 34GB fits A40 48GB, but the container disk must be
+  **100GB** (the 65.5GB bf16 download exceeds the 50GB default). Generation ≈ 16 tok/s
+  (~0.7× the 24B). Full cold start ≈ 184s; FlashBoot revival minutes-level.
+- **fp8 vs bf16 quality delta** is not yet quantified (no battery observed degradation).
 
 ## MCP adapter
 
